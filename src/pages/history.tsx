@@ -9,6 +9,7 @@ import {
   User,
   Settings,
   LogOut,
+  Code,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -37,6 +38,9 @@ export function Sidebar({
   isCollapsed: initialCollapsed,
   onToggle,
   history = demoHistory,
+  onAddResumeClick,
+  OnAddTemplate
+
 }) {
   const [isCollapsed, setIsCollapsed] = useState(initialCollapsed);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,7 +65,7 @@ export function Sidebar({
     checkMobile();
     window.addEventListener("resize", checkMobile);
 
-    const timer = setTimeout(() => setIsLoading(false), 3000);
+    const timer = setTimeout(() => setIsLoading(false), 1000);
     return () => {
       window.removeEventListener("resize", checkMobile);
       clearTimeout(timer);
@@ -203,8 +207,15 @@ export function Sidebar({
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+
                 <DropdownMenuItem className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" /> Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer"    onClick={onAddResumeClick} > 
+                  <Code  className="mr-2 h-4 w-4" /> Try Code Editor
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer"    onClick={OnAddTemplate} > 
+                  <FileText   className="mr-2 h-4 w-4" /> Add Resume Template
                 </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" /> Settings

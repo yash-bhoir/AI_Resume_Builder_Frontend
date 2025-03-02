@@ -18,7 +18,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/sign-in" element={<SignInPage />} />
             <Route path="/sign-up" element={<SignUpPage />} />
-            <Route path="/generate" element={<GenerateResumeContainer />} /> {/* Use GenerateResumeContainer */}
+            <Route path="/generate" element={<GenerateResumeContainer />} /> 
             <Route path="/preview" element={<ResumePreviewPage />} />
           </Routes>
         </div>
