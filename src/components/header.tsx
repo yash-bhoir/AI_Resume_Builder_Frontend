@@ -6,6 +6,7 @@ import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/c
 import { useEffect } from "react";
 import axios from "axios";
 import { toast } from "sonner";
+import UserFeedback from "./UserFeedback";
 
 export function Header() {
   const { user, isSignedIn } = useUser();
@@ -14,20 +15,26 @@ export function Header() {
   const registerUser = async () => {
     try {
       const response = await axios.post("http://localhost:8080/api/v1/users/register", {
-        email: user.primaryEmailAddress?.emailAddress,
-        fullName: user.fullName || `${user.firstName ?? ""} ${user.lastName ?? ""}`,
-        clerk_id: user.id,
-        phoneNumber: user.primaryPhoneNumber?.phoneNumber,
-        username: user.username || user.id, // fallback to user.id if username is unavailable
+        email: user?.primaryEmailAddress?.emailAddress,
+        fullName: user?.fullName || `${user?.firstName ?? ""} ${user?.lastName ?? ""}`,
+        clerk_id: user?.id,
+        phoneNumber: user?.primaryPhoneNumber?.phoneNumber,
+        username: user?.username || user?.id, // fallback to user.id if username is unavailable
       });
 
       // Show success toast
       toast.success(response.data.message || "User login successful");
       console.log("API Response:", response.data);
-    } catch (error) {
+    } catch (error: unknown) {
       // Show error toast
-      toast.error(error.response?.data?.message || "Failed to register user");
-      console.error("API Error:", error.response?.data);
+      if (error && typeof error === 'object' && 'response' in error && error.response && typeof error.response === 'object') {
+        const response = error.response as { data?: { message?: string } };
+        toast.error(response.data?.message || "Failed to register user");
+        console.error("API Error:", response.data);
+      } else {
+        toast.error("Failed to register user");
+        console.error("API Error:", error);
+      }
     }
   };
 
@@ -48,10 +55,10 @@ export function Header() {
   }, [user, isSignedIn]);
 
   return (
-    <header className="border-b">
-      <div className="container mx-auto px-1 h-16 flex items-center justify-between">
+    <header className="border-b max-w-7xl w-full mx-auto h-16">
+      <div className="container mx-auto px-6 h-full flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2">
+        <Link to="/" className="flex items-center space-x-2 text-black dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-all ease-in duration-300"> 
           <Bot className="w-6 h-6" />
           <span className="font-bold text-xl">ResumeAI</span>
         </Link>
@@ -59,6 +66,10 @@ export function Header() {
         {/* Actions */}
         <div className="flex items-center space-x-4">
           <ThemeToggle />
+
+          {user && (
+            <UserFeedback/>
+          )}
 
           {/* Show Sign In button if signed out */}
           <SignedOut>

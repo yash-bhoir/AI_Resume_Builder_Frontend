@@ -7,9 +7,9 @@ import {
   ChevronLeft,
   ChevronRight,
   User,
-  Settings,
   LogOut,
   Code,
+  Settings,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -27,25 +27,47 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { AiOutlineProduct } from "react-icons/ai";
+import { BsStars } from "react-icons/bs";
+import { IoCodeSlash } from "react-icons/io5";
+import { HiOutlineTemplate } from "react-icons/hi";
 
-const demoHistory = [
+
+interface ResumeItem {
+  id: number;
+  title: string;
+  date: string;
+}
+
+interface SidebarProps {
+  isCollapsed?: boolean;
+  onToggle?: (collapsed: boolean) => void;
+  history?: ResumeItem[];
+  currentPage?: string;
+  onAddResumeClick?: () => void;
+  onAddTemplate?: () => void;
+  onGoToGenerate?: () => void;
+}
+
+const demoHistory: ResumeItem[] = [
   { id: 1, title: "Frontend Developer Resume", date: "2024-03-20" },
   { id: 2, title: "Backend Engineer Resume", date: "2024-03-19" },
   { id: 3, title: "Product Manager CV", date: "2024-03-18" },
 ];
 
 export function Sidebar({
-  isCollapsed: initialCollapsed,
+  isCollapsed: initialCollapsed = false,
   onToggle,
   history = demoHistory,
+  currentPage,
   onAddResumeClick,
-  OnAddTemplate
-
-}) {
-  const [isCollapsed, setIsCollapsed] = useState(initialCollapsed);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  onAddTemplate,
+  onGoToGenerate,
+}: SidebarProps) {
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(initialCollapsed);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState<boolean>(false);
   const { user: clerkUser } = useUser();
 
   const handleToggle = () => {
@@ -53,7 +75,7 @@ export function Sidebar({
       setMobileSidebarOpen(!mobileSidebarOpen);
     } else {
       setIsCollapsed(!isCollapsed);
-      if (onToggle) onToggle(!isCollapsed);
+      onToggle?.(!isCollapsed);
     }
   };
 
@@ -83,7 +105,6 @@ export function Sidebar({
           variant="outline"
           size="icon"
           className="fixed top-4 left-4 z-50 rounded-full shadow-md bg-blue-600 text-white hover:bg-blue-700"
-          style={{ top: "1rem" }}
           onClick={handleToggle}
         >
           {mobileSidebarOpen ? (
@@ -109,7 +130,7 @@ export function Sidebar({
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-4 -right-4 h-8 w-8 border-2 border-[#535bf2] shadow-md bg-[#535bf2] hover:bg-[#484fe0] hidden md:flex"
+            className="absolute  z-10 top-4 -right-4 h-8 w-8 border-2 border-[#535bf2] shadow-md bg-[#535bf2] hover:bg-[#484fe0] hidden md:flex"
             onClick={handleToggle}
           >
             {isCollapsed ? (
@@ -121,61 +142,166 @@ export function Sidebar({
         )}
 
         <div className="flex flex-col h-full">
-          <div className="p-4 border-b">
-            <h2
-              className={`text-lg font-semibold flex items-center gap-2 ${
-                isCollapsed || isMobile ? "justify-center" : ""
-              }`}
-            >
-              <Clock className="h-5 w-5 text-primary" />
-              {!isCollapsed && !isMobile && "Resume History"}
-            </h2>
+          <div className="w-full h-full flex flex-col items-start">
+            <div className="flex flex-col items-start mb-2 w-full">
+              <div className="border-b py-2 px-6 w-full flex-1">
+                <h2
+                  className={`text-sm text-neutral-500 font-bold flex items-center gap-2 ${
+                    isCollapsed || isMobile ? "justify-center" : ""
+                  }`}
+                >
+                  {isCollapsed && !isMobile && (
+                    <AiOutlineProduct className="h-6 w-6 text-neutral-900 dark:text-neutral-50" />
+                  )}
+                  {!isCollapsed && !isMobile && "Products"}
+                </h2>
+              </div>
+
+              <div className="flex-1 px-4 py-2 w-full">
+                <div className="w-full h-10">
+                  <Button
+                    variant="ghost"
+                    className={`w-full h-full justify-start text-left px-2 py-4 transition-all ease-in duration-150 ${
+                      isCollapsed || isMobile ? "px-2" : ""
+                    } ${currentPage === "generate" ? "bg-secondary dark:bg-primary-foreground text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground"}`}
+                    onClick={onGoToGenerate}
+                  >
+                    <BsStars
+                      className={`h-5 w-5 ${
+                        !isCollapsed && !isMobile ? "mr-2" : ""
+                      }`}
+                    />
+                    {!isCollapsed && !isMobile && (
+                      <div className="flex flex-col items-start overflow-hidden">
+                        <span className="text-sm font-medium truncate w-full">
+                          Generate Resume
+                        </span>
+                      </div>
+                    )}
+                    {!isCollapsed && !isMobile && (
+                      <div className="inline-block ml-auto">
+                        <ChevronRight className="h-5 w-5" />
+                      </div>
+                    )}
+                  </Button>
+                </div>
+                <div className="w-full h-10">
+                  <Button
+                    variant="ghost"
+                    className={`w-full h-full justify-start text-left px-2 py-4 hover:bg-secondary dark:hover:bg-primary-foreground transition-all ease-in duration-150 ${
+                      isCollapsed || isMobile ? "px-2" : ""
+                    } ${currentPage === "codeEditor" ? "bg-secondary dark:bg-primary-foreground text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground"}`}
+                    onClick={onAddResumeClick}
+                  >
+                    <IoCodeSlash
+                      className={`h-5 w-5 ${
+                        !isCollapsed && !isMobile ? "mr-2" : ""
+                      }`}
+                    />
+                    {!isCollapsed && !isMobile && (
+                      <div className="flex flex-col items-start overflow-hidden">
+                        <span className="text-sm font-medium truncate w-full">
+                          Code Editor
+                        </span>
+                      </div>
+                    )}
+                    {!isCollapsed && !isMobile && (
+                      <div className="inline-block ml-auto">
+                        <ChevronRight className="h-5 w-5" />
+                      </div>
+                    )}
+                  </Button>
+                </div>
+                <div className="w-full h-10">
+                  <Button
+                    variant="ghost"
+                    className={`w-full h-full justify-start text-left px-2 py-4 hover:bg-secondary dark:hover:bg-primary-foreground transition-all ease-in duration-150 ${
+                      isCollapsed || isMobile ? "px-2" : ""
+                    } ${currentPage === "AddTemplate" ? "bg-secondary dark:bg-primary-foreground text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground"}`}
+                    onClick={onAddTemplate}
+                  >
+                    <HiOutlineTemplate
+                      className={`h-5 w-5 ${
+                        !isCollapsed && !isMobile ? "mr-2" : ""
+                      }`}
+                    />
+                    {!isCollapsed && !isMobile && (
+                      <div className="flex flex-col items-start overflow-hidden">
+                        <span className="text-sm font-medium truncate w-full">
+                          Template
+                        </span>
+                      </div>
+                    )}
+                    {!isCollapsed && !isMobile && (
+                      <div className="inline-block ml-auto">
+                        <ChevronRight className="h-5 w-5" />
+                      </div>
+                    )}
+                  </Button>
+                </div>
+                
+              </div>
+            </div>
+            <div>
+              <div className="border-b py-2 px-6">
+                <h2
+                  className={`text-sm text-neutral-500 font-bold flex items-center gap-2 ${
+                    isCollapsed || isMobile ? "justify-center" : ""
+                  }`}
+                >
+                  {isCollapsed && !isMobile && (
+                    <Clock className="h-5 w-5 text-neutral-900 dark:text-neutral-50" />
+                  )}
+                  {!isCollapsed && !isMobile && "Recent History"}
+                </h2>
+              </div>
+
+              <ScrollArea className="flex-1 px-4 py-2 mt-2">
+                <div className="space-y-2">
+                  {history.map((resume) => (
+                    <TooltipProvider key={resume.id} delayDuration={10}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            className={`w-full justify-start text-left p-2 py-3 hover:bg-secondary dark:hover:bg-primary-foreground transition-all ease-in duration-150 ${
+                              isCollapsed || isMobile ? "px-2" : ""
+                            }`}
+                          >
+                            <FileText
+                              className={`h-5 w-5 ${
+                                !isCollapsed && !isMobile && "mr-2"
+                              }`}
+                            />
+                            {!isCollapsed && !isMobile && (
+                              <div className="flex flex-col items-start overflow-hidden">
+                                <span className="text-sm font-medium truncate w-full">
+                                  {resume.title}
+                                </span>
+                                <span className="text-xs text-neutral-700 dark:text-neutral-600">
+                                  {new Date(resume.date).toLocaleDateString()}
+                                </span>
+                              </div>
+                            )}
+                            {!isCollapsed && !isMobile && (
+                              <div className="inline-block ml-auto">
+                                <ChevronRight className="h-5 w-5" />
+                              </div>
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" align="center">
+                          {resume.title}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
           </div>
 
-          <ScrollArea className="flex-1 px-4 py-2">
-            <div className="space-y-2">
-              {history.map((resume) => (
-                <TooltipProvider key={resume.id} delayDuration={100}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className={`w-full justify-start text-left transition-colors ${
-                          isCollapsed || isMobile ? "px-2" : ""
-                        } hover:bg-accent/50`}
-                      >
-                        <FileText
-                          className={`h-4 w-4 ${
-                            !isCollapsed && !isMobile && "mr-2"
-                          }`}
-                        />
-                        {!isCollapsed && !isMobile && (
-                          <div className="flex flex-col items-start overflow-hidden">
-                            <span className="text-sm font-medium truncate w-full">
-                              {resume.title}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(resume.date).toLocaleDateString()}
-                            </span>
-                          </div>
-                        )}
-                      </Button>
-                    </TooltipTrigger>
-                    {isCollapsed && (
-                      <TooltipContent side="right" align="center">
-                        {resume.title}
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </TooltipProvider>
-              ))}
-            </div>
-          </ScrollArea>
-
-          <div
-            className="border-t bg-card  mt-auto"
-            style={{ marginBottom: "1rem" }}
-          >
+          <div className="border-t bg-card mt-auto py-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -211,12 +337,12 @@ export function Sidebar({
                 <DropdownMenuItem className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" /> Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer"    onClick={onAddResumeClick} > 
+                {/* <DropdownMenuItem className="cursor-pointer"    onClick={onAddResumeClick} > 
                   <Code  className="mr-2 h-4 w-4" /> Try Code Editor
                 </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer"    onClick={OnAddTemplate} > 
                   <FileText   className="mr-2 h-4 w-4" /> Add Resume Template
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuItem className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" /> Settings
                 </DropdownMenuItem>

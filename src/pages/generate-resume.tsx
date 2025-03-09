@@ -6,12 +6,11 @@ import { useUser } from "@clerk/clerk-react";
 import ResumeSkeleton from "@/components/ResumeSkeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Label } from "recharts";
-import { Switch } from "@radix-ui/react-switch";
 import { PreviewSkeleton } from "@/components/PreviewSkeleton";
 import ResultPreview from "./resultPreview";
 import { Dialog, DialogContent, DialogTitle } from "@radix-ui/react-dialog";
 import { DialogHeader } from "@/components/ui/dialog";
+import { useTheme } from "next-themes";
 
 // Define message type
 interface Message {
@@ -27,7 +26,6 @@ export function GenerateResumePage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -40,6 +38,9 @@ export function GenerateResumePage() {
   
   const navigate = useNavigate();
   const { isSignedIn } = useUser();
+
+  const {theme} = useTheme();
+  const isDarkMode = theme === "dark";
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1000);
@@ -183,7 +184,7 @@ export function GenerateResumePage() {
   if (isLoading) return <ResumeSkeleton />;
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container m-auto h-fit mt-8">
       <div className={`flex gap-8 transition-all duration-500 ${showPreview ? "" : "justify-center"}`}>
         {/* Left Side: Chat Interface */}
         <div className={`${showPreview ? "w-1/2" : "w-full max-w-2xl"} space-y-6 transition-all duration-500 flex flex-col h-[80vh]`}>
@@ -272,13 +273,9 @@ export function GenerateResumePage() {
               </Button>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Label htmlFor="dark-mode">Dark Theme</Label>
-                <Switch id="dark-mode" checked={isDarkMode} onCheckedChange={setIsDarkMode} />
-              </div>
+            <div className="flex items-center">
 
-              <div className="flex gap-2">
+              <div className="ml-auto flex gap-2">
                 <Button
                   onClick={clearChat}
                   variant="outline"
