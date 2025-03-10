@@ -31,6 +31,7 @@ import { AiOutlineProduct } from "react-icons/ai";
 import { BsStars } from "react-icons/bs";
 import { IoCodeSlash } from "react-icons/io5";
 import { HiOutlineTemplate } from "react-icons/hi";
+import { truncateText } from "@/lib/utils";
 
 
 interface ResumeItem {
@@ -123,14 +124,14 @@ export function Sidebar({
               : "w-0 overflow-hidden"
             : isCollapsed
             ? "w-20"
-            : "w-80"
+            : "w-64"
         } ${isMobile ? "shadow-lg" : ""}`}
       >
         {!isMobile && (
           <Button
             variant="ghost"
             size="icon"
-            className="absolute  z-10 top-4 -right-4 h-8 w-8 border-2 border-[#535bf2] shadow-md bg-[#535bf2] hover:bg-[#484fe0] hidden md:flex"
+            className="absolute hidden z-10 top-4 -right-4 h-8 w-8 border-2 border-[#535bf2] shadow-md bg-[#535bf2] hover:bg-[#484fe0] md:flex"
             onClick={handleToggle}
           >
             {isCollapsed ? (
@@ -141,7 +142,7 @@ export function Sidebar({
           </Button>
         )}
 
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full bg-white dark:bg-black">
           <div className="w-full h-full flex flex-col items-start">
             <div className="flex flex-col items-start mb-2 w-full">
               <div className="border-b py-2 px-6 w-full flex-1">
@@ -151,19 +152,19 @@ export function Sidebar({
                   }`}
                 >
                   {isCollapsed && !isMobile && (
-                    <AiOutlineProduct className="h-6 w-6 text-neutral-900 dark:text-neutral-50" />
+                    <AiOutlineProduct className="h-6 w-6 text-neutral-500" />
                   )}
                   {!isCollapsed && !isMobile && "Products"}
                 </h2>
               </div>
 
               <div className="flex-1 px-4 py-2 w-full">
-                <div className="w-full h-10">
+                <div className="w-full h-8">
                   <Button
                     variant="ghost"
                     className={`w-full h-full justify-start text-left px-2 py-4 transition-all ease-in duration-150 ${
                       isCollapsed || isMobile ? "px-2" : ""
-                    } ${currentPage === "generate" ? "bg-secondary dark:bg-primary-foreground text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground"}`}
+                    } ${currentPage === "generate" ? "bg-secondary dark:bg-primary-foreground text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground bg-white dark:bg-black"}`}
                     onClick={onGoToGenerate}
                   >
                     <BsStars
@@ -185,12 +186,12 @@ export function Sidebar({
                     )}
                   </Button>
                 </div>
-                <div className="w-full h-10">
+                <div className="w-full h-8 mt-2">
                   <Button
                     variant="ghost"
-                    className={`w-full h-full justify-start text-left px-2 py-4 hover:bg-secondary dark:hover:bg-primary-foreground transition-all ease-in duration-150 ${
+                    className={`w-full h-full justify-start text-left px-2 py-4 transition-all ease-in duration-150 ${
                       isCollapsed || isMobile ? "px-2" : ""
-                    } ${currentPage === "codeEditor" ? "bg-secondary dark:bg-primary-foreground text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground"}`}
+                    } ${currentPage === "codeEditor" ? "bg-secondary dark:bg-primary-foreground text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground bg-white dark:bg-black"}`}
                     onClick={onAddResumeClick}
                   >
                     <IoCodeSlash
@@ -212,12 +213,12 @@ export function Sidebar({
                     )}
                   </Button>
                 </div>
-                <div className="w-full h-10">
+                <div className="w-full h-8 mt-2">
                   <Button
                     variant="ghost"
-                    className={`w-full h-full justify-start text-left px-2 py-4 hover:bg-secondary dark:hover:bg-primary-foreground transition-all ease-in duration-150 ${
+                    className={`w-full h-full justify-start text-left px-2 py-4 transition-all ease-in duration-150 ${
                       isCollapsed || isMobile ? "px-2" : ""
-                    } ${currentPage === "AddTemplate" ? "bg-secondary dark:bg-primary-foreground text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground"}`}
+                    } ${currentPage === "AddTemplate" ? "bg-secondary dark:bg-primary-foreground text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground bg-white dark:bg-black"}`}
                     onClick={onAddTemplate}
                   >
                     <HiOutlineTemplate
@@ -242,7 +243,7 @@ export function Sidebar({
                 
               </div>
             </div>
-            <div>
+            {/* <div>
               <div className="border-b py-2 px-6">
                 <h2
                   className={`text-sm text-neutral-500 font-bold flex items-center gap-2 ${
@@ -250,7 +251,7 @@ export function Sidebar({
                   }`}
                 >
                   {isCollapsed && !isMobile && (
-                    <Clock className="h-5 w-5 text-neutral-900 dark:text-neutral-50" />
+                    <Clock className="h-5 w-5 text-neutral-500" />
                   )}
                   {!isCollapsed && !isMobile && "Recent History"}
                 </h2>
@@ -264,7 +265,7 @@ export function Sidebar({
                         <TooltipTrigger asChild>
                           <Button
                             variant="ghost"
-                            className={`w-full justify-start text-left p-2 py-3 hover:bg-secondary dark:hover:bg-primary-foreground transition-all ease-in duration-150 ${
+                            className={`w-full justify-start text-left p-2 py-3 hover:bg-secondary dark:hover:bg-primary-foreground dark:bg-black bg-white transition-all ease-in duration-150 ${
                               isCollapsed || isMobile ? "px-2" : ""
                             }`}
                           >
@@ -276,7 +277,7 @@ export function Sidebar({
                             {!isCollapsed && !isMobile && (
                               <div className="flex flex-col items-start overflow-hidden">
                                 <span className="text-sm font-medium truncate w-full">
-                                  {resume.title}
+                                  {truncateText(resume.title, 20)}
                                 </span>
                                 <span className="text-xs text-neutral-700 dark:text-neutral-600">
                                   {new Date(resume.date).toLocaleDateString()}
@@ -298,15 +299,15 @@ export function Sidebar({
                   ))}
                 </div>
               </ScrollArea>
-            </div>
+            </div> */}
           </div>
 
-          <div className="border-t bg-card mt-auto py-3">
+          <div className="border-t bg-card mt-auto py-3 dark:bg-black bg-white">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-2 hover:bg-accent/50"
+                  className="w-full justify-start gap-2 hover:bg-accent/50 dark:hover:bg-primary-foreground/50 dark:bg-black bg-white"
                 >
                   {clerkUser?.imageUrl ? (
                     <img

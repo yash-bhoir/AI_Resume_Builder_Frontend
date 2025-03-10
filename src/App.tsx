@@ -11,7 +11,7 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Router>
-        <div className="h-full w-full bg-background selection:bg-neutral-900 selection:text-neutral-50 dark:selection:bg-primary dark:selection:text-neutral-900 flex flex-col"> 
+        <div className="h-full w-full bg-background selection:bg-indigo-500/50 selection:text-indigo-50 flex flex-col dark:bg-black bg-white"> 
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/sign-in" element={<SignInPage />} />
