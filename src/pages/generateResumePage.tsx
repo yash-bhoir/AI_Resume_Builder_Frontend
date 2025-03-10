@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Sidebar } from "./history";
+import { Sidebar } from "./Sidebar";
 import { GenerateResumePage } from "./generate-resume";
 import CodeEditor from "./codeEditor";
 import AddTemplate from "./addTemplate";
+import { Header } from "@/components/header";
 
 const mockHistory = [
   {
@@ -54,27 +55,32 @@ export function GenerateResumeContainer() {
   };
 
   return (
-    <div className="flex h-[760px]">
-      <Sidebar
-        isCollapsed={isCollapsed}
-        onToggle={handleToggle}
-        history={history}
-        onAddResumeClick={handleAddResumeClick}
-        OnAddTemplate ={handleAddTemplate}
-      />
-      <div className="flex-1 overflow-y-auto">
-        {(() => {
-          switch (currentPage) {
-            case "codeEditor":
-              return <CodeEditor onGoToGenerate={handleGoToGenerate} />;
-            case "generate":
-              return <GenerateResumePage />;
-            case "AddTemplate":
-              return <AddTemplate onGoToGenerate={handleGoToGenerate}/>;
-            default:
-              return <GenerateResumePage  />;
-          }
-        })()}
+    <div className="h-screen flex flex-col">
+      <Header />
+      <div className="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto">
+        <Sidebar
+          isCollapsed={isCollapsed}
+          onToggle={handleToggle}
+          history={history}
+          onAddResumeClick={handleAddResumeClick}
+          onAddTemplate={handleAddTemplate}
+          onGoToGenerate={handleGoToGenerate}
+          currentPage={currentPage}
+        />
+        <div className="flex-1 overflow-y-auto main_content_sidebar">
+          {(() => {
+            switch (currentPage) {
+              case "codeEditor":
+                return <CodeEditor onGoToGenerate={handleGoToGenerate} />;
+              case "generate":
+                return <GenerateResumePage />;
+              case "AddTemplate":
+                return <AddTemplate onGoToGenerate={handleGoToGenerate} />;
+              default:
+                return <GenerateResumePage />;
+            }
+          })()}
+        </div>
       </div>
     </div>
   );

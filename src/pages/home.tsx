@@ -1,79 +1,61 @@
-import { Link } from "react-router-dom"
-import { useUser, useClerk } from "@clerk/clerk-react"
-import { Button } from "@/components/ui/button"
-import { Bot, FileText, Sparkles } from "lucide-react"
-import { toast } from "sonner"
+import { useUser, useClerk } from "@clerk/clerk-react";
+import { Button } from "@/components/ui/button";
+import { FileText } from "lucide-react";
+import { toast } from "sonner";
+import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
+import KeyFeature from "@/components/KeyFeature";
+import UserFeedbackPreview from "@/components/UserFeedbackPreview";
+import FAQPreview from "@/components/FAQPreview";
+import Footer from "@/components/Footer";
+import { Header } from "@/components/header";
 
 export function HomePage() {
-  const { isSignedIn } = useUser()
-  const { redirectToSignIn } = useClerk()
+  const { isSignedIn } = useUser();
+  const { redirectToSignIn } = useClerk();
 
   const handleGenerateClick = () => {
     if (!isSignedIn) {
-      toast.error("Please sign in to generate a resume.")
-      redirectToSignIn()
+      toast.error("Please sign in to generate a resume.");
+      redirectToSignIn();
     } else {
-      window.location.href = "/generate"
+      window.location.href = "/generate";
     }
-  }
+  };
 
   return (
-    <main>
-      <div className="container mx-auto px-4 py-20">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-            Create Your Perfect Resume with AI
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-8">
-            Transform your career story into a compelling resume in seconds. Powered by advanced AI to highlight your strengths and achievements.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              className="bg-primary hover:bg-primary/90"
-              onClick={handleGenerateClick}
-            >
-              <Sparkles className="mr-2 h-5 w-5" /> Generate Resume
-            </Button>
-            <Button size="lg" variant="outline">
-              <FileText className="mr-2 h-5 w-5" /> View Examples
-            </Button>
-          </div>
-        </div>
-
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-3 gap-8 mt-20">
-          {[
-            {
-              icon: <Sparkles className="h-10 w-10 mb-4" />,
-              title: "AI-Powered Writing",
-              description:
-                "Our AI understands your experience and crafts compelling content that stands out.",
-            },
-            {
-              icon: <FileText className="h-10 w-10 mb-4" />,
-              title: "ATS-Friendly Templates",
-              description:
-                "Professionally designed templates optimized for Applicant Tracking Systems.",
-            },
-            {
-              icon: <Bot className="h-10 w-10 mb-4" />,
-              title: "Smart Formatting",
-              description:
-                "Automatic formatting and layout adjustments to create the perfect presentation.",
-            },
-          ].map((feature, index) => (
-            <div
-              key={index}
-              className="p-6 rounded-lg border bg-card hover:bg-card/80 transition-colors"
-            >
-              {feature.icon}
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
+    <>
+      <Header />
+      <main>
+        <div className="container h-full max-w-7xl w-full mx-auto px-4 py-20">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="bg-clip-text text-transparent text-center bg-gradient-to-b from-neutral-900 to-neutral-700 dark:from-neutral-600 dark:to-white text-2xl md:text-4xl lg:text-7xl font-sans py-2 relative z-20 font-bold tracking-tight leading-tight">
+              Create Your Perfect <br /> Resume with AI.
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground mb-8">
+              Transform your career story into a compelling resume in seconds.
+              <br />
+              Powered by advanced AI to highlight your strengths and
+              achievements.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <InteractiveHoverButton onClick={handleGenerateClick}>
+                Generate Resume
+              </InteractiveHoverButton>
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-black text-white dark:bg-white dark:text-black rounded-full"
+              >
+                <FileText className="mr-2 h-5 w-5" /> View Examples
+              </Button>
             </div>
-          ))}
+          </div>
+          <KeyFeature />
+          <UserFeedbackPreview />
+          <FAQPreview />
+          <Footer onClick={handleGenerateClick} />
         </div>
-      </div>
-    </main>
-  )
+      </main>
+    </>
+  );
 }

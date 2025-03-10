@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { Header } from "@/components/header";
 import { HomePage } from "@/pages/home";
 import { SignInPage } from "@/pages/sign-in";
 import { SignUpPage } from "@/pages/sign-up";
@@ -10,10 +9,9 @@ import { GenerateResumeContainer } from '@/pages/generateResumePage'; // Import 
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark">
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Router>
-        <div className="min-h-screen bg-background">
-          <Header />
+        <div className="h-full w-full bg-background selection:bg-indigo-500/50 selection:text-indigo-50 flex flex-col dark:bg-black bg-white"> 
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/sign-in" element={<SignInPage />} />
