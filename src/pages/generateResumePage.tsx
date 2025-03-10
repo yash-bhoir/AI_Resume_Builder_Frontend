@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sidebar } from "./history";
+import { Sidebar } from "./Sidebar";
 import { GenerateResumePage } from "./generate-resume";
 import CodeEditor from "./codeEditor";
 import AddTemplate from "./addTemplate";
@@ -67,7 +67,7 @@ export function GenerateResumeContainer() {
           onGoToGenerate={handleGoToGenerate}
           currentPage={currentPage}
         />
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto main_content_sidebar">
           {(() => {
             switch (currentPage) {
               case "codeEditor":

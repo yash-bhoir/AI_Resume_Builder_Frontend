@@ -164,7 +164,7 @@ export function Sidebar({
                     variant="ghost"
                     className={`w-full h-full justify-start text-left px-2 py-4 transition-all ease-in duration-150 ${
                       isCollapsed || isMobile ? "px-2" : ""
-                    } ${currentPage === "generate" ? "bg-secondary dark:bg-primary-foreground text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground bg-white dark:bg-black"}`}
+                    } ${currentPage === "generate" ? "bg-secondary dark:bg-primary-foreground text-indigo-500 hover:bg-secondary dark:hover:bg-primary-foreground hover:text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground bg-white dark:bg-black"}`}
                     onClick={onGoToGenerate}
                   >
                     <BsStars
@@ -175,7 +175,7 @@ export function Sidebar({
                     {!isCollapsed && !isMobile && (
                       <div className="flex flex-col items-start overflow-hidden">
                         <span className="text-sm font-medium truncate w-full">
-                          Generate Resume
+                          Overview
                         </span>
                       </div>
                     )}
@@ -191,7 +191,7 @@ export function Sidebar({
                     variant="ghost"
                     className={`w-full h-full justify-start text-left px-2 py-4 transition-all ease-in duration-150 ${
                       isCollapsed || isMobile ? "px-2" : ""
-                    } ${currentPage === "codeEditor" ? "bg-secondary dark:bg-primary-foreground text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground bg-white dark:bg-black"}`}
+                    } ${currentPage === "codeEditor" ? "bg-secondary dark:bg-primary-foreground text-indigo-500 hover:bg-secondary dark:hover:bg-primary-foreground hover:text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground bg-white dark:bg-black"}`}
                     onClick={onAddResumeClick}
                   >
                     <IoCodeSlash
@@ -218,7 +218,7 @@ export function Sidebar({
                     variant="ghost"
                     className={`w-full h-full justify-start text-left px-2 py-4 transition-all ease-in duration-150 ${
                       isCollapsed || isMobile ? "px-2" : ""
-                    } ${currentPage === "AddTemplate" ? "bg-secondary dark:bg-primary-foreground text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground bg-white dark:bg-black"}`}
+                    } ${currentPage === "AddTemplate" ? "bg-secondary dark:bg-primary-foreground text-indigo-500 hover:bg-secondary dark:hover:bg-primary-foreground hover:text-indigo-500" : "hover:bg-secondary dark:hover:bg-primary-foreground bg-white dark:bg-black"}`}
                     onClick={onAddTemplate}
                   >
                     <HiOutlineTemplate
@@ -243,63 +243,6 @@ export function Sidebar({
                 
               </div>
             </div>
-            {/* <div>
-              <div className="border-b py-2 px-6">
-                <h2
-                  className={`text-sm text-neutral-500 font-bold flex items-center gap-2 ${
-                    isCollapsed || isMobile ? "justify-center" : ""
-                  }`}
-                >
-                  {isCollapsed && !isMobile && (
-                    <Clock className="h-5 w-5 text-neutral-500" />
-                  )}
-                  {!isCollapsed && !isMobile && "Recent History"}
-                </h2>
-              </div>
-
-              <ScrollArea className="flex-1 px-4 py-2 mt-2">
-                <div className="space-y-2">
-                  {history.map((resume) => (
-                    <TooltipProvider key={resume.id} delayDuration={10}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            className={`w-full justify-start text-left p-2 py-3 hover:bg-secondary dark:hover:bg-primary-foreground dark:bg-black bg-white transition-all ease-in duration-150 ${
-                              isCollapsed || isMobile ? "px-2" : ""
-                            }`}
-                          >
-                            <FileText
-                              className={`h-5 w-5 ${
-                                !isCollapsed && !isMobile && "mr-2"
-                              }`}
-                            />
-                            {!isCollapsed && !isMobile && (
-                              <div className="flex flex-col items-start overflow-hidden">
-                                <span className="text-sm font-medium truncate w-full">
-                                  {truncateText(resume.title, 20)}
-                                </span>
-                                <span className="text-xs text-neutral-700 dark:text-neutral-600">
-                                  {new Date(resume.date).toLocaleDateString()}
-                                </span>
-                              </div>
-                            )}
-                            {!isCollapsed && !isMobile && (
-                              <div className="inline-block ml-auto">
-                                <ChevronRight className="h-5 w-5" />
-                              </div>
-                            )}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" align="center">
-                          {resume.title}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ))}
-                </div>
-              </ScrollArea>
-            </div> */}
           </div>
 
           <div className="border-t bg-card mt-auto py-3 dark:bg-black bg-white">
