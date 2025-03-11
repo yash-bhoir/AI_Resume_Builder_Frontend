@@ -11,15 +11,27 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
 import { Check, Circle } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { CountryDialCodes, ProfessionalTitleList } from "@/lib/utils";
+import WorkExperiencePreview from "./work-experience-preview";
+import EducationPreview from "./education-preview";
+import ProjectPreview from "./project-preview";
 
 interface GenerateResumeFlowProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface Experience {
-  workingProfession: string;
-  company: string;
+interface WorkExperience {
+  jobTitle: string;
+  companyName: string;
   duration: string;
   responsibilities: string;
   achievements: string;
@@ -35,18 +47,14 @@ interface Project {
   name: string;
   technologies: string;
   description: string;
+  deployedLink?: string;
 }
 
-interface FormData {
-  fullName: string;
-  email: string;
-  workingProfession: string;
-  careerSummary: string;
-  experience: Experience[];
-  education: Education[];
-  skills: string;
-  projects: Project[];
-  resumeName: string;
+interface Certifications {
+  name: string;
+  issuedBy: string;
+  issueDate: string;
+  deployedLink?: string;
 }
 
 const steps = [
@@ -54,7 +62,7 @@ const steps = [
   "Career Summary",
   "Work Experience",
   "Education",
-  "Skills & Certifications",
+  "Skills",
   "Projects",
   "Review & Submit",
 ];
@@ -64,7 +72,19 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
   onClose,
 }) => {
   const [step, setStep] = useState<number>(0);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<{
+    fullName: string;
+    email: string;
+    workingProfession: string;
+    careerSummary: string;
+    experience: WorkExperience[];
+    education: Education[];
+    skills: string;
+    certification: Certifications[];
+    projects: Project[];
+    resumeName: string;
+    phoneNumber: string;
+  }>({
     fullName: "",
     email: "",
     workingProfession: "",
@@ -72,9 +92,13 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
     experience: [],
     education: [],
     skills: "",
+    certification: [],
     projects: [],
     resumeName: "",
+    phoneNumber: "",
   });
+
+  const [selectedCode, setSelectedCode] = useState<string>("+91");
 
   useEffect(() => {
     setStep(0);
@@ -151,6 +175,7 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
                   placeholder="Enter template name"
                   value={formData.resumeName}
                   onChange={handleChange}
+                  autoComplete="off"
                 />
               </>
               <>
@@ -160,6 +185,7 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
                   placeholder="Enter your full name"
                   value={formData.fullName}
                   onChange={handleChange}
+                  autoComplete="off"
                 />
               </>
               <>
@@ -172,6 +198,36 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
                   autoComplete="off"
                 />
               </>
+              <>
+                <Label>Phone Number</Label>
+                <div className="flex items-center gap-2">
+                  <Select onValueChange={(value) => setSelectedCode(value)}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder={selectedCode} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {CountryDialCodes.map((code) => (
+                          <SelectItem
+                            key={code.dial_code}
+                            value={code.dial_code}
+                            onClick={() => setSelectedCode(code.dial_code)}
+                          >
+                            {code.dial_code} — {code.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    name="phoneNumber"
+                    placeholder="00000 00000"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    autoComplete="off"
+                  />
+                </div>
+              </>
             </div>
           )}
 
@@ -180,12 +236,28 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
             <div className="flex flex-col items-start gap-3">
               <>
                 <Label>Working profession</Label>
-                <Input
-                  name="workingProfession"
-                  placeholder="Enter working profession"
+                <Select
                   value={formData.workingProfession}
-                  onChange={handleChange}
-                />
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      workingProfession: value,
+                    }))
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select profession" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {ProfessionalTitleList.map((profession) => (
+                        <SelectItem key={profession} value={profession}>
+                          {profession}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </>
 
               <>
@@ -203,22 +275,27 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
 
           {/* Step 3: Work Experience */}
           {step === 2 && (
-            <div>
-              <Input placeholder="Job Title" />
-              <Input placeholder="Company Name" className="mt-2" />
-              <Input placeholder="Employment Duration" className="mt-2" />
-              <Textarea placeholder="Key Responsibilities" className="mt-2" />
-              <Textarea placeholder="Achievements" className="mt-2" />
+            <div className="flex flex-col items-start gap-3 h-[315px] overflow-y-scroll main_content_sidebar">
+              <WorkExperiencePreview
+                experience={formData.experience}
+                onUpdateExperience={(newExperience) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    experience: newExperience,
+                  }))
+                }
+              />
             </div>
           )}
 
           {/* Step 4: Education */}
           {step === 3 && (
-            <div>
-              <Input placeholder="Degree Name" />
-              <Input placeholder="University/College" className="mt-2" />
-              <Input placeholder="Year of Graduation" className="mt-2" />
-            </div>
+            <EducationPreview
+              education={formData.education}
+              onUpdateEducation={(newEducation) =>
+                setFormData((prev) => ({ ...prev, education: newEducation }))
+              }
+            />
           )}
 
           {/* Step 5: Skills & Certifications */}
@@ -233,14 +310,12 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
 
           {/* Step 6: Projects */}
           {step === 5 && (
-            <div>
-              <Input placeholder="Project Name" />
-              <Input placeholder="Technologies Used" className="mt-2" />
-              <Textarea
-                placeholder="Brief Description (1-2 sentences)"
-                className="mt-2"
-              />
-            </div>
+            <ProjectPreview
+              projects={formData.projects}
+              onUpdateProjects={(newProjects) =>
+                setFormData((prev) => ({ ...prev, projects: newProjects }))
+              }
+            />
           )}
 
           {/* Step 7: Review & Submit */}
