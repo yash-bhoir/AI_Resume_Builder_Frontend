@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
-import { Check, Circle } from "lucide-react";
+import { Check, ChevronsUpDown, Circle, X } from "lucide-react";
+import { MdSubdirectoryArrowRight } from "react-icons/md";
 import {
   Select,
   SelectContent,
@@ -19,10 +20,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { CountryDialCodes, ProfessionalTitleList } from "@/lib/utils";
+import { cn, CountryDialCodes, ProfessionalTitleList } from "@/lib/utils";
 import WorkExperiencePreview from "./work-experience-preview";
 import EducationPreview from "./education-preview";
 import ProjectPreview from "./project-preview";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "../ui/command";
+import { Badge } from "../ui/badge";
+import CertificationPreview from "./certification-preview";
 
 interface GenerateResumeFlowProps {
   isOpen: boolean;
@@ -72,6 +84,8 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
   onClose,
 }) => {
   const [step, setStep] = useState<number>(0);
+  const [isProfessionSelectOpen, setIsProfessionSelectOpen] =
+    useState<boolean>(false);
   const [formData, setFormData] = useState<{
     fullName: string;
     email: string;
@@ -79,7 +93,7 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
     careerSummary: string;
     experience: WorkExperience[];
     education: Education[];
-    skills: string;
+    skills: string[];
     certification: Certifications[];
     projects: Project[];
     resumeName: string;
@@ -91,7 +105,7 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
     careerSummary: "",
     experience: [],
     education: [],
-    skills: "",
+    skills: [],
     certification: [],
     projects: [],
     resumeName: "",
@@ -118,6 +132,27 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
   const handleSubmit = () => {
     console.log("Final Data:", formData);
     onClose();
+  };
+
+  const handleAddSkill = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const newSkill = e.currentTarget.value.trim();
+      if (newSkill && !formData.skills.includes(newSkill)) {
+        setFormData((prev) => ({
+          ...prev,
+          skills: [...prev.skills, newSkill],
+        }));
+        e.currentTarget.value = ""; // Clear input after adding
+      }
+    }
+  };
+
+  const handleRemoveSkill = (skillToRemove: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((skill) => skill !== skillToRemove),
+    }));
   };
 
   return (
@@ -236,28 +271,55 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
             <div className="flex flex-col items-start gap-3">
               <>
                 <Label>Working profession</Label>
-                <Select
-                  value={formData.workingProfession}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      workingProfession: value,
-                    }))
-                  }
+                <Popover
+                  open={isProfessionSelectOpen}
+                  onOpenChange={setIsProfessionSelectOpen}
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select profession" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {ProfessionalTitleList.map((profession) => (
-                        <SelectItem key={profession} value={profession}>
-                          {profession}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={isProfessionSelectOpen}
+                      className="w-full justify-between"
+                    >
+                      {formData.workingProfession || "Select profession..."}
+                      <ChevronsUpDown className="opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Search profession..." />
+                      <CommandList>
+                        <CommandEmpty>No profession found.</CommandEmpty>
+                        <CommandGroup>
+                          {ProfessionalTitleList.map((option) => (
+                            <CommandItem
+                              key={option}
+                              value={option}
+                              onSelect={(value) => {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  workingProfession: value,
+                                }));
+                                setIsProfessionSelectOpen(false);
+                              }}
+                            >
+                              {option}
+                              <Check
+                                className={cn(
+                                  "ml-auto size-4",
+                                  formData.workingProfession === option
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </>
 
               <>
@@ -298,14 +360,51 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
             />
           )}
 
-          {/* Step 5: Skills & Certifications */}
+          {/* Step 5: Skills */}
           {step === 4 && (
-            <Input
-              name="skills"
-              placeholder="Top 5 Skills (comma-separated)"
-              value={formData.skills}
-              onChange={handleChange}
-            />
+            <div className="flex w-full flex-col items-start">
+              <div className="flex flex-col items-start w-full max-h-[100px] h-fit">
+                {/* Input Box */}
+                <div className="w-full relative">
+                  <Input
+                    name="skills"
+                    placeholder="Top 5 Skills (comma-separated)"
+                    onKeyDown={handleAddSkill}
+                  />
+                  <div className="absolute top-1 right-2 flex items-center text-xs border-2 text-neutral-500 font-semibold p-1 rounded-md">
+                    <MdSubdirectoryArrowRight />
+                    Enter
+                  </div>
+                </div>
+
+                {/* Display Skills as Badges */}
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {formData.skills.map((skill) => (
+                    <Badge key={skill} className="flex items-center">
+                      {skill}
+                      <X
+                        className="ml-1 h-4 w-4 cursor-pointer"
+                        onClick={() => handleRemoveSkill(skill)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <div className="w-full flex flex-col items-start mt-4">
+                <h1 className="font-bold text-neutral-600 dark:text-neutral-300 mb-2">
+                  Certifications
+                </h1>
+                <CertificationPreview
+                  certifications={formData.certification}
+                  onUpdateCertifications={(newCertifications) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      certification: newCertifications,
+                    }))
+                  }
+                />
+              </div>
+            </div>
           )}
 
           {/* Step 6: Projects */}

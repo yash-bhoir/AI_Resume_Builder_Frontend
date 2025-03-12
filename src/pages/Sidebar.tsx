@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import {
-  Clock,
-  FileText,
   ChevronLeft,
   ChevronRight,
   User,
   LogOut,
-  Code,
   Settings,
 } from "lucide-react";
 import {
@@ -21,17 +17,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarSkeleton } from "@/components/SidebarSkeleton";
 import { useUser } from "@clerk/clerk-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+
 import { AiOutlineProduct } from "react-icons/ai";
 import { BsStars } from "react-icons/bs";
 import { IoCodeSlash } from "react-icons/io5";
 import { HiOutlineTemplate } from "react-icons/hi";
-import { truncateText } from "@/lib/utils";
 
 
 interface ResumeItem {
@@ -281,12 +271,6 @@ export function Sidebar({
                 <DropdownMenuItem className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" /> Profile
                 </DropdownMenuItem>
-                {/* <DropdownMenuItem className="cursor-pointer"    onClick={onAddResumeClick} > 
-                  <Code  className="mr-2 h-4 w-4" /> Try Code Editor
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer"    onClick={OnAddTemplate} > 
-                  <FileText   className="mr-2 h-4 w-4" /> Add Resume Template
-                </DropdownMenuItem> */}
                 <DropdownMenuItem className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" /> Settings
                 </DropdownMenuItem>
