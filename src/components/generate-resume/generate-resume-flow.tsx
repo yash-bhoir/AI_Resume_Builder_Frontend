@@ -420,8 +420,7 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
           {/* Step 7: Review & Submit */}
           {step === 6 && (
             <div>
-              <h3 className="font-semibold">Review & Submit</h3>
-              <pre className="text-sm bg-gray-100 p-3 rounded-md mt-2">
+              <pre className="text-sm bg-gray-100 p-3 rounded-md mt-2 h-[300px] overflow-y-scroll">
                 {JSON.stringify(formData, null, 2)}
               </pre>
             </div>

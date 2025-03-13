@@ -34,7 +34,8 @@ export function GenerateResumePage(): JSX.Element {
   return (
     <>
       <div className="container mt-8">
-        <div className="m-auto h-fit flex flex-col items-start w-full px-10 py-2">
+        {/* <div className="m-auto h-fit flex flex-col items-start w-full px-10 py-2">
+          <h1 className="text-lg font-medium text-neutral-400">Overview</h1>
           <Button
             variant={"outline"}
             className="m-2 group flex flex-col w-[200px] h-[200px]"
@@ -60,9 +61,9 @@ export function GenerateResumePage(): JSX.Element {
               />
             ))}
           </div>
-        </div>
+        </div> */}
 
-        {/* <GenerateChatView /> */}
+        <GenerateChatView />
       </div>
       <GenerateResumeFlow
         isOpen={modalOpen}
