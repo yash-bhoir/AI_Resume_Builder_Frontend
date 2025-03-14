@@ -10,19 +10,64 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
-import { Check, Circle } from "lucide-react";
+import { Check, ChevronsUpDown, Circle, X } from "lucide-react";
+import { MdSubdirectoryArrowRight } from "react-icons/md";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { cn, CountryDialCodes, ProfessionalTitleList } from "@/lib/utils";
+import WorkExperiencePreview from "./work-experience-preview";
+import EducationPreview from "./education-preview";
+import ProjectPreview from "./project-preview";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "../ui/command";
+import { Badge } from "../ui/badge";
+import CertificationPreview from "./certification-preview";
+import { v4 as uuidv4 } from "uuid";
+import { useNavigate } from "react-router-dom";
+// import { FaCheck } from "react-icons/fa6";
+// import { FaTimes } from "react-icons/fa";
+
+// WIP:
+// TODO: Implement the unique templte name validation server
+
+interface FormData {
+  fullName: string;
+  email: string;
+  workingProfession: string;
+  careerSummary: string;
+  experience: WorkExperience[];
+  education: Education[];
+  skills: string[];
+  certification: Certifications[];
+  projects: Project[];
+  resumeName: string;
+  phoneNumber: string;
+}
 
 interface GenerateResumeFlowProps {
   isOpen: boolean;
   onClose: () => void;
+  initialFormData?: FormData;
+  isUpdateResume?: boolean;
 }
 
-interface Experience {
-  workingProfession: string;
-  company: string;
+interface WorkExperience {
+  jobTitle: string;
+  companyName: string;
   duration: string;
-  responsibilities: string;
-  achievements: string;
 }
 
 interface Education {
@@ -35,18 +80,14 @@ interface Project {
   name: string;
   technologies: string;
   description: string;
+  deployedLink?: string;
 }
 
-interface FormData {
-  fullName: string;
-  email: string;
-  workingProfession: string;
-  careerSummary: string;
-  experience: Experience[];
-  education: Education[];
-  skills: string;
-  projects: Project[];
-  resumeName: string;
+interface Certifications {
+  name: string;
+  issuedBy: string;
+  issueDate: string;
+  deployedLink?: string;
 }
 
 const steps = [
@@ -54,31 +95,121 @@ const steps = [
   "Career Summary",
   "Work Experience",
   "Education",
-  "Skills & Certifications",
+  "Skills",
   "Projects",
-  "Review & Submit",
 ];
 
 const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
   isOpen,
   onClose,
+  initialFormData,
+  isUpdateResume,
 }) => {
   const [step, setStep] = useState<number>(0);
-  const [formData, setFormData] = useState<FormData>({
-    fullName: "",
-    email: "",
-    workingProfession: "",
-    careerSummary: "",
-    experience: [],
-    education: [],
-    skills: "",
-    projects: [],
-    resumeName: "",
-  });
+  const [isProfessionSelectOpen, setIsProfessionSelectOpen] =
+    useState<boolean>(false);
+  const [formData, setFormData] = useState<FormData>(
+    initialFormData || {
+      fullName: "",
+      email: "",
+      workingProfession: "",
+      careerSummary: "",
+      experience: [],
+      education: [],
+      skills: [],
+      certification: [],
+      projects: [],
+      resumeName: "",
+      phoneNumber: "",
+    }
+  );
+  const [selectedCode, setSelectedCode] = useState<string>("+91");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    setStep(0);
-  }, [isOpen]);
+  const navigate = useNavigate();
+
+  const validateStep = () => {
+    let newErrors: Record<string, string> = {};
+
+    if (step === 0) {
+      if (!formData.resumeName.trim()) {
+        newErrors.resumeName = "Template name is required";
+      }
+      if (
+        formData.resumeName &&
+        formData.resumeName.length < 3 &&
+        formData.resumeName.trim()
+      ) {
+        newErrors.resumeName = "Template name must be at least 3 characters";
+      }
+      if (formData.resumeName && formData.resumeName.length > 50) {
+        newErrors.resumeName = "Template name must be less than 50 characters";
+      }
+      if (!formData.fullName.trim()) {
+        newErrors.fullName = "Full name is required";
+      }
+      if (!formData.email.trim()) {
+        newErrors.email = "Email is required";
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        newErrors.email = "Invalid email format";
+      }
+      if (!formData.phoneNumber.trim()) {
+        newErrors.phoneNumber = "Phone number is required";
+      } else if (!/^\d{10}$/.test(formData.phoneNumber)) {
+        newErrors.phoneNumber = "Invalid phone number";
+      }
+    }
+
+    if (step === 1) {
+      if (!formData.workingProfession.trim()) {
+        newErrors.workingProfession = "Working profession is required";
+      }
+      if (!formData.careerSummary.trim()) {
+        newErrors.careerSummary = "Career summary is required";
+      }
+      if (formData.careerSummary.trim() && formData.careerSummary.length < 20) {
+        newErrors.careerSummary =
+          "Career summary must be at least 20 characters";
+      }
+      if (
+        formData.careerSummary.trim() &&
+        formData.careerSummary.length > 200
+      ) {
+        newErrors.careerSummary =
+          "Career summary must be less than 200 characters";
+      }
+    }
+
+    if (step === 4) {
+      if (formData.skills.length === 0) {
+        newErrors.skills = "At least one skill is required";
+      }
+      if (formData.skills.length > 5) {
+        newErrors.skills = "Only 5 skills are allowed";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // Returns true if no errors
+  };
+
+  const handleCreateResume = () => {
+    const uniqueId = uuidv4();
+    navigate(`/generate/${uniqueId}`, {
+      state: { formData },
+    });
+  };
+
+  const handleSubmit = () => {
+    if (validateStep()) {
+      if (isUpdateResume) {
+        // onUpdateResume(formData);
+      } else {
+        handleCreateResume();
+      }
+      onClose();
+    }
+  };
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -87,35 +218,69 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const nextStep = () =>
-    setStep((prev) => Math.min(prev + 1, steps.length - 1));
+  const nextStep = () => {
+    if (validateStep()) {
+      setStep((prev) => Math.min(prev + 1, steps.length - 1));
+    }
+  };
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 0));
 
-  const handleSubmit = () => {
-    console.log("Final Data:", formData);
-    onClose();
+  const handleAddSkill = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const newSkill = e.currentTarget.value.trim();
+      if (newSkill && !formData.skills.includes(newSkill)) {
+        setFormData((prev) => ({
+          ...prev,
+          skills: [...prev.skills, newSkill],
+        }));
+        e.currentTarget.value = ""; // Clear input after adding
+      }
+    }
   };
+
+  const handleRemoveSkill = (skillToRemove: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((skill) => skill !== skillToRemove),
+    }));
+  };
+
+  useEffect(() => {
+    setStep(0);
+    setErrors({});
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (initialFormData) {
+      setFormData(initialFormData);
+    }
+  }, [initialFormData]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="h-[540px] flex flex-col">
+      <DialogContent className="min-h-[540px] h-fit max-h-[650px] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Create a new resume</DialogTitle>
+          <DialogTitle>
+            {" "}
+            {initialFormData ? "Edit Resume" : "Create a new Resume"}
+          </DialogTitle>
           <DialogDescription>
-            Generate a new resume by following the steps below
+            {initialFormData
+              ? "Edit your existing resume details"
+              : "Create a new resume by filling out the fields"}
           </DialogDescription>
         </DialogHeader>
 
-        {/* Step Indicator */}
         <div className="flex items-center justify-between px-2">
           {steps.map((_, index) => (
             <div key={index} className="flex items-center">
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors ${
                   index === step
-                    ? "border-blue-500 bg-blue-50 text-indigo-500"
+                    ? "border-blue-500 text-indigo-500"
                     : index < step
-                    ? "border-green-500 bg-green-50 text-green-500"
+                    ? "border-green-500 text-green-500"
                     : "border-gray-300 text-gray-300"
                 }`}
               >
@@ -127,7 +292,7 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
               </div>
               {index < steps.length - 1 && (
                 <div
-                  className={`h-[2px] w-12 transition-colors ${
+                  className={`h-[2px] w-16 transition-colors ${
                     index < step ? "bg-green-500" : "bg-gray-300"
                   }`}
                 />
@@ -144,15 +309,26 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
           {/* Step 1: Basic Information */}
           {step === 0 && (
             <div className="flex flex-col items-start gap-3">
-              <>
-                <Label> Template name</Label>
+              <div className="flex flex-col relative items-start w-full gap-3">
+                <Label>Template name</Label>
                 <Input
                   name="resumeName"
                   placeholder="Enter template name"
                   value={formData.resumeName}
                   onChange={handleChange}
+                  autoComplete="off"
+                  className={errors.resumeName ? "border-red-500" : ""}
                 />
-              </>
+                {/* <span className="w-4 h-4 rounded-full bg-green-500 text-white flex items-center justify-center absolute bottom-2 right-3">
+                  <FaCheck className="size-2" />
+                </span> */}
+                {/* <span className="w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center absolute bottom-2 right-3">
+                  <FaTimes className="size-2" />
+                </span> */}
+                {errors.resumeName && (
+                  <p className="text-red-500 text-sm">{errors.resumeName}</p>
+                )}
+              </div>
               <>
                 <Label>Full Name</Label>
                 <Input
@@ -160,7 +336,12 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
                   placeholder="Enter your full name"
                   value={formData.fullName}
                   onChange={handleChange}
+                  autoComplete="off"
+                  className={errors.fullName ? "border-red-500" : ""}
                 />
+                {errors.fullName && (
+                  <p className="text-red-500 text-sm">{errors.fullName}</p>
+                )}
               </>
               <>
                 <Label>Email Address</Label>
@@ -170,7 +351,45 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
                   value={formData.email}
                   onChange={handleChange}
                   autoComplete="off"
+                  className={errors.email ? "border-red-500" : ""}
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-sm">{errors.email}</p>
+                )}
+              </>
+              <>
+                <Label>Phone Number</Label>
+                <div className="flex items-center gap-2">
+                  <Select onValueChange={(value) => setSelectedCode(value)}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder={selectedCode} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {CountryDialCodes.map((code) => (
+                          <SelectItem
+                            key={code.name}
+                            value={code.dial_code}
+                            onClick={() => setSelectedCode(code.dial_code)}
+                          >
+                            {code.dial_code} — {code.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    name="phoneNumber"
+                    placeholder="00000 00000"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    autoComplete="off"
+                    className={errors.phoneNumber ? "border-red-500" : ""}
+                  />
+                </div>
+                {errors.phoneNumber && (
+                  <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
+                )}
               </>
             </div>
           )}
@@ -180,12 +399,60 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
             <div className="flex flex-col items-start gap-3">
               <>
                 <Label>Working profession</Label>
-                <Input
-                  name="workingProfession"
-                  placeholder="Enter working profession"
-                  value={formData.workingProfession}
-                  onChange={handleChange}
-                />
+                <Popover
+                  open={isProfessionSelectOpen}
+                  onOpenChange={setIsProfessionSelectOpen}
+                >
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={isProfessionSelectOpen}
+                      className="w-full justify-between"
+                    >
+                      {formData.workingProfession || "Select profession..."}
+                      <ChevronsUpDown className="opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Search profession..." />
+                      <CommandList>
+                        <CommandEmpty>No profession found.</CommandEmpty>
+                        <CommandGroup>
+                          {ProfessionalTitleList.map((option) => (
+                            <CommandItem
+                              key={option}
+                              value={option}
+                              onSelect={(value) => {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  workingProfession: value,
+                                }));
+                                setIsProfessionSelectOpen(false);
+                              }}
+                            >
+                              {option}
+                              <Check
+                                className={cn(
+                                  "ml-auto size-4",
+                                  formData.workingProfession === option
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                {errors.workingProfession && (
+                  <p className="text-red-500 text-sm">
+                    {errors.workingProfession}
+                  </p>
+                )}
               </>
 
               <>
@@ -197,77 +464,112 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
                   onChange={handleChange}
                   className="h-36 resize-none"
                 />
+                {errors.careerSummary && (
+                  <p className="text-red-500 text-sm">{errors.careerSummary}</p>
+                )}
               </>
             </div>
           )}
 
           {/* Step 3: Work Experience */}
           {step === 2 && (
-            <div>
-              <Input placeholder="Job Title" />
-              <Input placeholder="Company Name" className="mt-2" />
-              <Input placeholder="Employment Duration" className="mt-2" />
-              <Textarea placeholder="Key Responsibilities" className="mt-2" />
-              <Textarea placeholder="Achievements" className="mt-2" />
+            <div className="flex flex-col items-start gap-3 h-[315px] overflow-y-scroll main_content_sidebar">
+              <WorkExperiencePreview
+                experience={formData.experience}
+                onUpdateExperience={(newExperience) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    experience: newExperience,
+                  }))
+                }
+              />
             </div>
           )}
 
           {/* Step 4: Education */}
           {step === 3 && (
-            <div>
-              <Input placeholder="Degree Name" />
-              <Input placeholder="University/College" className="mt-2" />
-              <Input placeholder="Year of Graduation" className="mt-2" />
-            </div>
+            <EducationPreview
+              education={formData.education}
+              onUpdateEducation={(newEducation) =>
+                setFormData((prev) => ({ ...prev, education: newEducation }))
+              }
+            />
           )}
 
-          {/* Step 5: Skills & Certifications */}
+          {/* Step 5: Skills */}
           {step === 4 && (
-            <Input
-              name="skills"
-              placeholder="Top 5 Skills (comma-separated)"
-              value={formData.skills}
-              onChange={handleChange}
-            />
+            <div className="flex w-full flex-col items-start">
+              <div className="flex flex-col items-start w-full max-h-[100px] h-fit">
+                {/* Input Box */}
+                <div className="w-full relative">
+                  <Input
+                    name="skills"
+                    placeholder="Top 5 Skills (comma-separated)"
+                    onKeyDown={handleAddSkill}
+                  />
+                  <div className="absolute top-1 right-2 flex items-center text-xs border-2 text-neutral-500 font-semibold p-1 rounded-md">
+                    <MdSubdirectoryArrowRight />
+                    Enter
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {formData.skills.map((skill) => (
+                    <Badge key={skill} className="flex items-center">
+                      {skill}
+                      <X
+                        className="ml-1 h-4 w-4 cursor-pointer"
+                        onClick={() => handleRemoveSkill(skill)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+                {errors.skills && (
+                  <p className="text-red-500 text-sm">{errors.skills}</p>
+                )}
+              </div>
+              <div className="w-full flex flex-col items-start mt-4">
+                <h1 className="font-bold text-neutral-600 dark:text-neutral-300 mb-2">
+                  Certifications
+                </h1>
+                <CertificationPreview
+                  certifications={formData.certification}
+                  onUpdateCertifications={(newCertifications) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      certification: newCertifications,
+                    }))
+                  }
+                />
+              </div>
+            </div>
           )}
 
           {/* Step 6: Projects */}
           {step === 5 && (
-            <div>
-              <Input placeholder="Project Name" />
-              <Input placeholder="Technologies Used" className="mt-2" />
-              <Textarea
-                placeholder="Brief Description (1-2 sentences)"
-                className="mt-2"
-              />
-            </div>
+            <ProjectPreview
+              projects={formData.projects}
+              onUpdateProjects={(newProjects) =>
+                setFormData((prev) => ({ ...prev, projects: newProjects }))
+              }
+            />
           )}
-
-          {/* Step 7: Review & Submit */}
-          {step === 6 && (
-            <div>
-              <h3 className="font-semibold">Review & Submit</h3>
-              <pre className="text-sm bg-gray-100 p-3 rounded-md mt-2">
-                {JSON.stringify(formData, null, 2)}
-              </pre>
-            </div>
+        </div>
+        <div className="flex justify-between mt-auto">
+          {step > 0 && (
+            <Button onClick={prevStep} variant={"outline"}>
+              Previous
+            </Button>
           )}
-
-          {/* Navigation Buttons */}
-          <div className="flex justify-between mt-auto">
-            {step > 0 && (
-              <Button onClick={prevStep} variant={"outline"}>
-                Previous
-              </Button>
-            )}
-            {step < steps.length - 1 ? (
-              <Button onClick={nextStep} className="ml-auto">
-                Next
-              </Button>
-            ) : (
-              <Button onClick={handleSubmit}>Submit</Button>
-            )}
-          </div>
+          {step < steps.length - 1 ? (
+            <Button onClick={nextStep} className="ml-auto">
+              Next
+            </Button>
+          ) : (
+            <Button onClick={handleSubmit}>
+              {initialFormData ? "Update Resume" : "Create Resume"}
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>

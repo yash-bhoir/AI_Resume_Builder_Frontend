@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { toast } from "sonner";
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
-import KeyFeature from "@/components/KeyFeature";
-import UserFeedbackPreview from "@/components/UserFeedbackPreview";
-import FAQPreview from "@/components/FAQPreview";
-import Footer from "@/components/Footer";
-import { Header } from "@/components/header";
+import KeyFeature from "@/components/common/keyfeature";
+import UserFeedbackPreview from "@/components/common/user-feedback-preview";
+import FAQPreview from "@/components/common/faq-preview";
+import Footer from "@/components/common/footer";
+import { Header } from "@/components/common/header";
 
 export function HomePage() {
   const { isSignedIn } = useUser();

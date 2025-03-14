@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Bot, LogIn } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/clerk-react";
 import { useEffect } from "react";
 import axios from "axios";
 import { toast } from "sonner";
-import UserFeedback from "./UserFeedback";
+import UserFeedback from "./user-feedback";
 
 export function Header() {
   const { user, isSignedIn } = useUser();
@@ -24,7 +24,6 @@ export function Header() {
 
       // Show success toast
       toast.success(response.data.message || "User login successful");
-      console.log("API Response:", response.data);
     } catch (error: unknown) {
       // Show error toast
       if (error && typeof error === 'object' && 'response' in error && error.response && typeof error.response === 'object') {
