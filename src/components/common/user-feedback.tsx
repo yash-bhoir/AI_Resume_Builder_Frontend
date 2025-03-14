@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LuMessageSquarePlus } from "react-icons/lu";
-import { Textarea } from "./ui/textarea";
+import { Textarea } from "../ui/textarea";
 
 //WIP : Complete user feedback ui functionality + backend integration
 //TODO : 1. Add user feedback form fields and validation

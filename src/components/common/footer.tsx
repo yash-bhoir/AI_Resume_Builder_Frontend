@@ -1,7 +1,7 @@
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { Bot, Github, Linkedin, Twitter } from "lucide-react";
-import { InteractiveHoverButton } from "./magicui/interactive-hover-button";
-import { DotPattern } from "./magicui/dot-pattern";
+import { InteractiveHoverButton } from "../magicui/interactive-hover-button";
+import { DotPattern } from "../magicui/dot-pattern";
 import { cn } from "@/lib/utils";
 
 interface FooterProps {

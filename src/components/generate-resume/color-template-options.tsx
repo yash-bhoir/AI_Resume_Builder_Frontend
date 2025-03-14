@@ -44,14 +44,14 @@ const ColorTemplateOptions = ({
       >
         {/* None Option */}
         <div
-          className={`flex items-center justify-center gap-2 w-[40px] h-[40px] rounded-md border-2 ${
+          className={`flex items-center justify-center gap-2 w-[40px] h-[40px] rounded-md border-2 cursor-pointer ${
             selectedColor == "none"
               ? "border-indigo-500"
-              : "border-neutral-400 dark:bg-neutral-500"
+              : "border-neutral-400"
           }`}
         >
           <RadioGroupItem value="none" id="none" className="hidden" />
-          <Label htmlFor="none">
+          <Label htmlFor="none" className="w-full h-full flex items-center justify-center cursor-pointer">
             <BsBan className="size-4 text-neutral-500 dark:text-neutral-400" />
           </Label>
         </div>
@@ -60,16 +60,16 @@ const ColorTemplateOptions = ({
         {predefinedColors.map((color) => (
           <div
             key={color}
-            className={`flex items-center justify-center gap-2 w-[40px] h-[40px] p-1 rounded-md border-2 ${
+            className={`w-[40px] h-[40px] rounded-md border-2 p-1 cursor-pointer ${
               selectedColor == color
                 ? "border-indigo-500"
-                : "border-neutral-400 dark:bg-neutral-500"
+                : "border-neutral-400"
             }`}
           >
             <RadioGroupItem value={color} id={color} className="hidden" />
             <Label
               htmlFor={color}
-              className="w-full h-full rounded-md"
+              className="w-full h-full rounded-md flex items-center justify-center cursor-pointer"
               style={{ backgroundColor: color }}
             ></Label>
           </div>

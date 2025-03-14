@@ -1,16 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Code2, Eye, RefreshCcw, Sparkles } from "lucide-react";
-import { useNavigate } from 'react-router-dom';
 
-function CodeEditor( {onGoToGenerate }) {
+function CodeEditor() {
   const [code, setCode] = useState<string>("");
-  const [editedContent, setEditedContent] = useState<string>('');
-  const [aiButtonPosition, setAiButtonPosition] = useState<{ top: number; left: number } | null>(null);
+  const [editedContent, setEditedContent] = useState<string>("");
+  const [aiButtonPosition, setAiButtonPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (previewRef.current) {
@@ -32,7 +33,11 @@ function CodeEditor( {onGoToGenerate }) {
 
   const handleTextSelection = () => {
     const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0 && selection.toString().trim() !== "") {
+    if (
+      selection &&
+      selection.rangeCount > 0 &&
+      selection.toString().trim() !== ""
+    ) {
       const range = selection.getRangeAt(0);
       const rect = range.getBoundingClientRect();
       setAiButtonPosition({
@@ -56,12 +61,11 @@ function CodeEditor( {onGoToGenerate }) {
     }
   };
 
-  const goToGenerate = () => {
-    navigate('/generate');
-  };
-
   return (
-    <div className="min-h-screen bg-background p-6 relative" onMouseUp={handleTextSelection}>
+    <div
+      className="min-h-screen bg-background p-6 relative"
+      onMouseUp={handleTextSelection}
+    >
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Code Preview Editor</h1>
@@ -73,9 +77,6 @@ function CodeEditor( {onGoToGenerate }) {
             >
               <RefreshCcw className="w-4 h-4" />
               Sync to Editor
-            </Button>
-            <Button variant="outline" onClick={onGoToGenerate}>
-              Go to Generate
             </Button>
           </div>
         </div>
@@ -124,7 +125,7 @@ function CodeEditor( {onGoToGenerate }) {
           variant="default"
           size="sm"
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: aiButtonPosition.top,
             left: aiButtonPosition.left,
             zIndex: 50,

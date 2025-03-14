@@ -35,15 +35,63 @@ const ProjectPreview = ({
     deployedLink: "",
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const validateProject = () => {
+    let newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Project name is required";
+    } else if (formData.name.length < 10 || formData.name.length > 100) {
+      newErrors.name = "Project name must be between 10 to 100 characters";
+    }
+
+    if (!formData.technologies.trim()) {
+      newErrors.technologies = "Technologies used are required";
+    } else if (
+      formData.technologies.length < 5 ||
+      formData.technologies.length > 100
+    ) {
+      newErrors.technologies =
+        "Technologies must be between 5 to 100 characters";
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = "Description is required";
+    } else if (
+      formData.description.length < 20 ||
+      formData.description.length > 250
+    ) {
+      newErrors.description =
+        "Description must be between 20 to 250 characters";
+    }
+
+    const isDuplicate = projects.some(
+      (project) =>
+        project.name.trim().toLowerCase() ===
+          formData.name.trim().toLowerCase() &&
+        project.technologies.trim().toLowerCase() ===
+          formData.technologies.trim().toLowerCase()
+    );
+
+    if (isDuplicate) {
+      newErrors.general = "Duplicate project entry is not allowed";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = () => {
-    if (projects.length < 3) {
+    if (validateProject()) {
       onUpdateProjects([...projects, formData]);
 
       setFormData({
@@ -64,14 +112,12 @@ const ProjectPreview = ({
 
   return (
     <div className="w-full flex flex-col gap-4 h-full">
-      {/* Add Button */}
       {projects.length < 3 && (
         <Button onClick={() => setIsOpen(true)} variant={"outline"}>
           Add Project
         </Button>
       )}
 
-      {/* Project Modal */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent>
           <DialogHeader>
@@ -84,30 +130,50 @@ const ProjectPreview = ({
               value={formData.name}
               onChange={handleChange}
             />
+            {errors.name && (
+              <span className="text-red-500 text-sm">{errors.name}</span>
+            )}
+
             <Input
               placeholder="Technologies Used"
               name="technologies"
               value={formData.technologies}
               onChange={handleChange}
             />
+            {errors.technologies && (
+              <span className="text-red-500 text-sm">
+                {errors.technologies}
+              </span>
+            )}
+
             <Textarea
               placeholder="Brief Description (1-2 sentences)"
               name="description"
               value={formData.description}
               onChange={handleChange}
             />
+            {errors.description && (
+              <span className="text-red-500 text-sm">
+                {errors.description}
+              </span>
+            )}
+
             <Input
               placeholder="Deployed Link (optional)"
               name="deployedLink"
               value={formData.deployedLink}
               onChange={handleChange}
             />
+
+            {errors.general && (
+              <span className="text-red-500 text-sm">{errors.general}</span>
+            )}
+
             <Button onClick={handleSubmit}>Submit</Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Display Projects */}
       {projects.length > 0 && (
         <div className="flex flex-col items-start gap-3 border-t pt-4">
           {projects.map((project, index) => (

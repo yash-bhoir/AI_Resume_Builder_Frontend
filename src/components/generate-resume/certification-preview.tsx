@@ -27,31 +27,71 @@ const CertificationPreview = ({
   onUpdateCertifications,
 }: CertificationPreviewProps) => {
   const [isOpen, setIsOpen] = useState(false);
-
   const [formData, setFormData] = useState<Certification>({
     name: "",
     issuedBy: "",
     issueDate: "",
     deployedLink: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const validateCertification = () => {
+    let newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Certification name is required";
+    } else if (formData.name.length < 10 || formData.name.length > 100) {
+      newErrors.name =
+        "Certification name must be between 10 to 100 characters";
+    }
+
+    if (!formData.issuedBy.trim()) {
+      newErrors.issuedBy = "Issuer is required";
+    } else if (formData.issuedBy.length < 4 || formData.issuedBy.length > 100) {
+      newErrors.issuedBy = "Issuer must be between 4 to 100 characters";
+    }
+
+    if (!formData.issueDate.trim()) {
+      newErrors.issueDate = "Issue date is required";
+    }
+
+    const isDuplicate = certifications.some(
+      (cert) =>
+        (cert.name.trim().toLowerCase() ===
+          formData.name.trim().toLowerCase() &&
+          cert.issuedBy.trim().toLowerCase() ===
+            formData.issuedBy.trim().toLowerCase() &&
+          cert.issueDate === formData.issueDate) ||
+        (cert.name.trim().toLowerCase() ===
+          formData.name.trim().toLowerCase() &&
+          cert.issuedBy.trim().toLowerCase() ===
+            formData.issuedBy.trim().toLowerCase()) ||
+        cert.name.trim().toLowerCase() === formData.name.trim().toLowerCase()
+    );
+
+    if (isDuplicate) {
+      newErrors.general = "Duplicate certification entry is not allowed";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = () => {
-    if (formData.name && formData.issuedBy && formData.issueDate) {
+    if (validateCertification()) {
       onUpdateCertifications([...certifications, formData]);
-
-      // Clear form after submission
       setFormData({
         name: "",
         issuedBy: "",
         issueDate: "",
         deployedLink: "",
       });
-
       setIsOpen(false);
     }
   };
@@ -63,36 +103,38 @@ const CertificationPreview = ({
 
   return (
     <div className="w-full flex flex-col gap-4 h-full">
-      {/* Add Button */}
-
       {certifications.length < 2 && (
-        <Button onClick={() => setIsOpen(true)} variant={"outline"}>
+        <Button onClick={() => setIsOpen(true)} variant="outline">
           Add Certification
         </Button>
       )}
 
-      {/* Certification Modal */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Certification</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-3">
-            {/* Certification Name */}
             <Input
               placeholder="Certification Name"
               name="name"
               value={formData.name}
               onChange={handleChange}
             />
-            {/* Issued By */}
+            {errors.name && (
+              <span className="text-red-500 text-sm">{errors.name}</span>
+            )}
+
             <Input
               placeholder="Issued By"
               name="issuedBy"
               value={formData.issuedBy}
               onChange={handleChange}
             />
-            {/* Issue Date */}
+            {errors.issuedBy && (
+              <span className="text-red-500 text-sm">{errors.issuedBy}</span>
+            )}
+
             <Input
               type="date"
               placeholder="Issue Date"
@@ -100,7 +142,10 @@ const CertificationPreview = ({
               value={formData.issueDate}
               onChange={handleChange}
             />
-            {/* Deployed Link (Optional) */}
+            {errors.issueDate && (
+              <span className="text-red-500 text-sm">{errors.issueDate}</span>
+            )}
+
             <Input
               placeholder="Deployed Link (optional)"
               name="deployedLink"
@@ -108,12 +153,15 @@ const CertificationPreview = ({
               onChange={handleChange}
             />
 
+            {errors.general && (
+              <span className="text-red-500 text-sm">{errors.general}</span>
+            )}
+
             <Button onClick={handleSubmit}>Submit</Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Display Certifications */}
       {certifications.length > 0 && (
         <div className="flex flex-col items-start gap-3 border-t pt-4">
           {certifications.map((certification, index) => (

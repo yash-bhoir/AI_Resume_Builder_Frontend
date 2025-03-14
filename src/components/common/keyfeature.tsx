@@ -1,5 +1,5 @@
 import React from "react";
-import { GlowingEffect } from "./ui/glowing-effect";
+import { GlowingEffect } from "../ui/glowing-effect";
 import { Clock, Globe, Palette, ShieldCheck, Wand } from "lucide-react";
 
 interface GridItemProps {

@@ -1,25 +1,48 @@
-import { useState } from 'react';
-import { PlusCircle, FileCode, FileImage, FileText, LayoutTemplate, Pencil, X, Sparkles, Bot } from 'lucide-react';
+import { useState } from "react";
+import {
+  PlusCircle,
+  FileCode,
+  FileImage,
+  FileText,
+  LayoutTemplate,
+  Pencil,
+  X,
+  Sparkles,
+  Bot,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
 interface Template {
   id: string;
   name: string;
   html: string;
-  type: 'system' | 'custom';
+  type: "system" | "custom";
 }
 
 const systemTemplates: Template[] = [
   {
-    id: '1',
-    name: 'Modern Professional',
+    id: "1",
+    name: "Modern Professional",
     html: `
       <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
         <h1 style="color: #2563eb; font-size: 24px;">John Doe</h1>
@@ -32,11 +55,11 @@ const systemTemplates: Template[] = [
         </div>
       </div>
     `,
-    type: 'system'
+    type: "system",
   },
   {
-    id: '2',
-    name: 'Creative Designer',
+    id: "2",
+    name: "Creative Designer",
     html: `
       <div style="font-family: 'Helvetica', sans-serif; padding: 20px; background: #f8f9fa;">
         <div style="text-align: center;">
@@ -54,13 +77,24 @@ const systemTemplates: Template[] = [
         </div>
       </div>
     `,
-    type: 'system'
+    type: "system",
   },
 ];
 
-function TemplatePreview({ html, className }: { html: string; className?: string }) {
+function TemplatePreview({
+  html,
+  className,
+}: {
+  html: string;
+  className?: string;
+}) {
   return (
-    <div className={cn("w-full h-full overflow-hidden bg-white/5 backdrop-blur-sm rounded-md", className)}>
+    <div
+      className={cn(
+        "w-full h-full overflow-hidden bg-white/5 backdrop-blur-sm rounded-md",
+        className
+      )}
+    >
       <iframe
         srcDoc={html}
         title="Template Preview"
@@ -73,7 +107,7 @@ function TemplatePreview({ html, className }: { html: string; className?: string
 
 function AddTemplateCard({ onClick }: { onClick: () => void }) {
   return (
-    <Card 
+    <Card
       className="overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer group border-dashed border-border/50 glow ai-card-pattern"
       onClick={onClick}
     >
@@ -91,7 +125,13 @@ function AddTemplateCard({ onClick }: { onClick: () => void }) {
   );
 }
 
-function PreviewDialog({ template, onClose }: { template: Template; onClose: () => void }) {
+function PreviewDialog({
+  template,
+  onClose,
+}: {
+  template: Template;
+  onClose: () => void;
+}) {
   const [editedHtml, setEditedHtml] = useState(template.html);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -122,12 +162,12 @@ function PreviewDialog({ template, onClose }: { template: Template; onClose: () 
             )}
           </div>
           <div className="w-48 space-y-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full"
               onClick={() => setIsEditing(!isEditing)}
             >
-              {isEditing ? 'Preview' : 'Edit HTML'}
+              {isEditing ? "Preview" : "Edit HTML"}
             </Button>
             <Button className="w-full">Use Template</Button>
           </div>
@@ -137,13 +177,20 @@ function PreviewDialog({ template, onClose }: { template: Template; onClose: () 
   );
 }
 
-function TemplateSection({ title, templates, icon: Icon, onAddTemplate }: {
+function TemplateSection({
+  title,
+  templates,
+  icon: Icon,
+  onAddTemplate,
+}: {
   title: string;
   templates: Template[];
   icon: React.ComponentType<{ className?: string }>;
   onAddTemplate?: () => void;
 }) {
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
+    null
+  );
 
   return (
     <div className="space-y-4">
@@ -156,14 +203,17 @@ function TemplateSection({ title, templates, icon: Icon, onAddTemplate }: {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {templates.map((template) => (
-          <Card key={template.id} className={cn(
-            "overflow-hidden transition-all duration-300 hover:shadow-lg border-border/50 glow ai-card-pattern",
-            template.type === 'system' ? 'bg-card/50' : 'bg-card/80'
-          )}>
+          <Card
+            key={template.id}
+            className={cn(
+              "overflow-hidden transition-all duration-300 hover:shadow-lg border-border/50 glow ai-card-pattern",
+              template.type === "system" ? "bg-card/50" : "bg-card/80"
+            )}
+          >
             <CardHeader className="p-3 bg-gradient-to-b from-accent/10">
               <CardTitle className="text-sm flex items-center justify-between">
                 {template.name}
-                {template.type === 'system' && (
+                {template.type === "system" && (
                   <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full border border-primary/20">
                     System
                   </span>
@@ -171,7 +221,7 @@ function TemplateSection({ title, templates, icon: Icon, onAddTemplate }: {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div 
+              <div
                 className="aspect-[3/4] cursor-pointer bg-gradient-to-b from-transparent to-accent/20"
                 onClick={() => setSelectedTemplate(template)}
               >
@@ -179,7 +229,11 @@ function TemplateSection({ title, templates, icon: Icon, onAddTemplate }: {
               </div>
             </CardContent>
             <CardFooter className="justify-end p-2 gap-2 bg-gradient-to-t from-accent/10">
-              <Button variant="outline" size="sm" onClick={() => setSelectedTemplate(template)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedTemplate(template)}
+              >
                 Preview
               </Button>
               <Button size="sm">Use</Button>
@@ -189,19 +243,19 @@ function TemplateSection({ title, templates, icon: Icon, onAddTemplate }: {
         {onAddTemplate && <AddTemplateCard onClick={onAddTemplate} />}
       </div>
       {selectedTemplate && (
-        <PreviewDialog 
-          template={selectedTemplate} 
-          onClose={() => setSelectedTemplate(null)} 
+        <PreviewDialog
+          template={selectedTemplate}
+          onClose={() => setSelectedTemplate(null)}
         />
       )}
     </div>
   );
 }
 
-function AddTemplate({onGoToGenerate}) {
+function AddTemplate() {
   const [customTemplates, setCustomTemplates] = useState<Template[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [htmlCode, setHtmlCode] = useState('');
+  const [htmlCode, setHtmlCode] = useState("");
   const { toast } = useToast();
 
   const handleFileUpload = async (file: File) => {
@@ -214,9 +268,9 @@ function AddTemplate({onGoToGenerate}) {
       `;
       const newTemplate: Template = {
         id: Date.now().toString(),
-        name: file.name.split('.')[0],
+        name: file.name.split(".")[0],
         html: fakeHtml,
-        type: 'custom',
+        type: "custom",
       };
       setCustomTemplates([...customTemplates, newTemplate]);
       setIsOpen(false);
@@ -248,12 +302,12 @@ function AddTemplate({onGoToGenerate}) {
 
     const newTemplate: Template = {
       id: Date.now().toString(),
-      name: 'Custom Template',
+      name: "Custom Template",
       html: htmlCode,
-      type: 'custom',
+      type: "custom",
     };
     setCustomTemplates([...customTemplates, newTemplate]);
-    setHtmlCode('');
+    setHtmlCode("");
     setIsOpen(false);
     toast({
       title: "Success!",
@@ -266,13 +320,8 @@ function AddTemplate({onGoToGenerate}) {
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
-        <Button variant="outline" onClick={onGoToGenerate}>
-              Go to Generate
-            </Button>
-          
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-            </DialogTrigger>
+            <DialogTrigger asChild></DialogTrigger>
             <DialogContent className="sm:max-w-[600px] border border-border/50 bg-background/95 backdrop-blur-xl">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
@@ -307,7 +356,10 @@ function AddTemplate({onGoToGenerate}) {
                       <input
                         type="file"
                         accept=".doc,.docx,.pdf,.jpg,.jpeg,.png"
-                        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+                        onChange={(e) =>
+                          e.target.files?.[0] &&
+                          handleFileUpload(e.target.files[0])
+                        }
                         className="hidden"
                         id="file-upload"
                       />
