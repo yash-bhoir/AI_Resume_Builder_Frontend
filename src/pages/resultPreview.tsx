@@ -41,26 +41,26 @@ function ResultPreview({ htmlCode }: Prop) {
       const range = selection.getRangeAt(0);
       const rect = range.getBoundingClientRect();
       const previewRect = previewSectionRef.current?.getBoundingClientRect();
-  
+
       if (previewRect) {
         // Calculate the position relative to the preview section
         const top = rect.top - previewRect.top + window.scrollY - 70; // 70px above the selected text
         const left = rect.left - previewRect.left + window.scrollX;
-  
+
         // Ensure the prompt box stays within the preview section
         const maxTop = previewRect.height - 100; // Adjust for prompt box height
         const maxLeft = previewRect.width - 200; // Adjust for prompt box width
-  
+
         const adjustedTop = Math.max(0, Math.min(top, maxTop)); // Ensure it doesn't go above or below
         const adjustedLeft = Math.max(0, Math.min(left, maxLeft)); // Ensure it doesn't go outside left or right
-  
+
         const selectedText = selection.toString(); // Capture selected text
         setSelectedText(selectedText);
         setAiButtonPosition({
           top: adjustedTop,
           left: adjustedLeft,
         });
-  
+
         // Log the selected text to the console
         console.log("Selected Text:", selectedText);
       }
@@ -129,13 +129,15 @@ function ResultPreview({ htmlCode }: Prop) {
       {/* Preview Section */}
       <div
         ref={previewSectionRef}
-        className="border rounded-lg shadow-sm bg-background"
+        className=""
         onMouseUp={handleTextSelection}
       >
-        <div className="p-4 border-b flex items-center justify-between">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Eye className="w-4 h-4" />
-            <span className="font-medium">Preview (Editable)</span>
+            <h2 className="text-sm font-bold text-neutral-600 dark:text-neutral-400">
+              Resume Preview
+            </h2>
           </div>
           <div>
             <Button
@@ -148,10 +150,10 @@ function ResultPreview({ htmlCode }: Prop) {
             </Button>
           </div>
         </div>
-        <div className="p-4">
+        <div className="p-4 h-[75vh] overflow-auto border rounded-lg shadow-lg main_content_sidebar">
           <div
             ref={previewRef}
-            className="border rounded-lg p-4 min-h-[400px] bg-white"
+            className="min-h-[400px] bg-white"
             contentEditable
             onInput={handlePreviewEdit}
             suppressContentEditableWarning

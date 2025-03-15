@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, useEffect } from "react";
+import { useState, ChangeEvent, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -37,57 +37,21 @@ import { Badge } from "../ui/badge";
 import CertificationPreview from "./certification-preview";
 import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
-// import { FaCheck } from "react-icons/fa6";
-// import { FaTimes } from "react-icons/fa";
+import { useUser } from "@clerk/clerk-react";
+import axios from "axios";
+import { RESUME_ENDPOINTS } from "@/lib/endpoints";
+import { FaCheck } from "react-icons/fa6";
+import { FaTimes } from "react-icons/fa";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
+import { FormData } from "@/interface/resume-interface";
 
-// WIP:
-// TODO: Implement the unique templte name validation server
-
-interface FormData {
-  fullName: string;
-  email: string;
-  workingProfession: string;
-  careerSummary: string;
-  experience: WorkExperience[];
-  education: Education[];
-  skills: string[];
-  certification: Certifications[];
-  projects: Project[];
-  resumeName: string;
-  phoneNumber: string;
-}
-
+// TODO: fixes edit resume and binding
 interface GenerateResumeFlowProps {
   isOpen: boolean;
   onClose: () => void;
   initialFormData?: FormData;
-  isUpdateResume?: boolean;
-}
-
-interface WorkExperience {
-  jobTitle: string;
-  companyName: string;
-  duration: string;
-}
-
-interface Education {
-  degree: string;
-  university: string;
-  graduationYear: string;
-}
-
-interface Project {
-  name: string;
-  technologies: string;
-  description: string;
-  deployedLink?: string;
-}
-
-interface Certifications {
-  name: string;
-  issuedBy: string;
-  issueDate: string;
-  deployedLink?: string;
+  isUpdateResume?: string;
 }
 
 const steps = [
@@ -125,26 +89,39 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
   );
   const [selectedCode, setSelectedCode] = useState<string>("+91");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isTemplateNameUnique, setIsTemplateNameUnique] = useState<
+    boolean | null
+  >(null);
+  const { userId } = useAuth();
 
   const navigate = useNavigate();
+  const { user } = useUser();
 
   const validateStep = () => {
     let newErrors: Record<string, string> = {};
 
     if (step === 0) {
-      if (!formData.resumeName.trim()) {
-        newErrors.resumeName = "Template name is required";
-      }
+      // Skip resumeName validation when updating if it hasn't changed
       if (
-        formData.resumeName &&
-        formData.resumeName.length < 3 &&
-        formData.resumeName.trim()
+        !isUpdateResume ||
+        formData.resumeName !== initialFormData?.resumeName
       ) {
-        newErrors.resumeName = "Template name must be at least 3 characters";
+        if (!formData.resumeName.trim()) {
+          newErrors.resumeName = "Template name is required";
+        }
+        if (
+          formData.resumeName &&
+          formData.resumeName.length < 3 &&
+          formData.resumeName.trim()
+        ) {
+          newErrors.resumeName = "Template name must be at least 3 characters";
+        }
+        if (formData.resumeName && formData.resumeName.length > 50) {
+          newErrors.resumeName =
+            "Template name must be less than 50 characters";
+        }
       }
-      if (formData.resumeName && formData.resumeName.length > 50) {
-        newErrors.resumeName = "Template name must be less than 50 characters";
-      }
+
       if (!formData.fullName.trim()) {
         newErrors.fullName = "Full name is required";
       }
@@ -193,17 +170,47 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
     return Object.keys(newErrors).length === 0; // Returns true if no errors
   };
 
-  const handleCreateResume = () => {
-    const uniqueId = uuidv4();
-    navigate(`/generate/${uniqueId}`, {
-      state: { formData },
-    });
+  const handleCreateResume = async () => {
+    try {
+      const templateId = uuidv4();
+      const response = await axios.post(`${RESUME_ENDPOINTS.RESUME_CREATE}`, {
+        ...formData,
+        templateId,
+        userId: user?.id,
+      });
+      toast.success("Resume created successfully!");
+
+      if (response) {
+        navigate(`/generate/${templateId}`, {
+          state: { formData },
+        });
+      }
+    } catch (error: any) {
+      console.error("Error creating resume:", error);
+      toast.error(error?.response?.data?.message || "Failed to create resume");
+    }
+  };
+
+  const handleUpdateResume = async () => {
+    try {
+      await axios.put(`${RESUME_ENDPOINTS.RESUME_UPDATE}`, {
+        ...formData,
+        resumeId: isUpdateResume,
+        userId: user?.id,
+      });
+      toast.success("Resume updated successfully!");
+    } catch (error: any) {
+      console.error("Error creating resume:", error);
+      toast.error(error?.response?.data?.message || "Failed to create resume");
+    }
   };
 
   const handleSubmit = () => {
     if (validateStep()) {
+      console.log(isUpdateResume);
+
       if (isUpdateResume) {
-        // onUpdateResume(formData);
+        handleUpdateResume();
       } else {
         handleCreateResume();
       }
@@ -234,7 +241,7 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
           ...prev,
           skills: [...prev.skills, newSkill],
         }));
-        e.currentTarget.value = ""; // Clear input after adding
+        e.currentTarget.value = "";
       }
     }
   };
@@ -246,6 +253,37 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
     }));
   };
 
+  const handleCheckTemplateNameUniqueness = useCallback(() => {
+    if (!formData.resumeName) return;
+
+    if (isUpdateResume && formData.resumeName === initialFormData?.resumeName) {
+      setIsTemplateNameUnique(true);
+      setErrors((prev) => ({ ...prev, resumeName: "" }));
+      return;
+    }
+
+    const parameters = {
+      userId: userId,
+      templateName: formData.resumeName,
+    };
+
+    axios
+      .post(`${RESUME_ENDPOINTS.RESUME_TEMPLATE_NAME_UNIQUE}`, parameters)
+      .then(() => {
+        setIsTemplateNameUnique(true);
+        setErrors((prev) => ({ ...prev, resumeName: "" }));
+      })
+      .catch((error) => {
+        if (error.response?.status === 409) {
+          setIsTemplateNameUnique(false);
+          setErrors((prev) => ({
+            ...prev,
+            resumeName: "Template name already exists",
+          }));
+        }
+      });
+  }, [formData.resumeName, userId, isUpdateResume, initialFormData]);
+
   useEffect(() => {
     setStep(0);
     setErrors({});
@@ -256,6 +294,14 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
       setFormData(initialFormData);
     }
   }, [initialFormData]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      handleCheckTemplateNameUniqueness();
+    }, 500);
+
+    return () => clearTimeout(handler);
+  }, [formData.resumeName, handleCheckTemplateNameUniqueness]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -319,12 +365,20 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
                   autoComplete="off"
                   className={errors.resumeName ? "border-red-500" : ""}
                 />
-                {/* <span className="w-4 h-4 rounded-full bg-green-500 text-white flex items-center justify-center absolute bottom-2 right-3">
-                  <FaCheck className="size-2" />
-                </span> */}
-                {/* <span className="w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center absolute bottom-2 right-3">
-                  <FaTimes className="size-2" />
-                </span> */}
+                {formData.resumeName.trim().length > 0 &&
+                  isTemplateNameUnique !== null && (
+                    <span
+                      className={`w-4 h-4 rounded-full text-white flex items-center justify-center absolute bottom-2 right-3 ${
+                        isTemplateNameUnique ? "bg-green-500" : "bg-red-500"
+                      }`}
+                    >
+                      {isTemplateNameUnique ? (
+                        <FaCheck className="size-2" />
+                      ) : (
+                        <FaTimes className="size-2" />
+                      )}
+                    </span>
+                  )}
                 {errors.resumeName && (
                   <p className="text-red-500 text-sm">{errors.resumeName}</p>
                 )}
