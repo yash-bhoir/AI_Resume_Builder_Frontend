@@ -1,3 +1,4 @@
+import { FormData } from "@/interface/resume-interface";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -11,6 +12,45 @@ export function truncateText(text: string, maxLength: number) {
   }
   return text;
 }
+
+export const MapResumeDataToFormData = (resumeData: any): FormData => {
+  return {
+    fullName: resumeData.fullName || "",
+    email: resumeData.email || "",
+    phoneNumber: resumeData.phoneNumber || "",
+    workingProfession: resumeData.workingProfession || "",
+    careerSummary: resumeData.careerSummary || "",
+    resumeName: resumeData.templateName || "",
+    skills: resumeData.skills || [],
+
+    experience: resumeData.experience?.map((exp: any) => ({
+      jobTitle: exp.jobTitle || "",
+      companyName: exp.companyName || "",
+      duration: exp.duration || "",
+    })) || [],
+
+    education: resumeData.education?.map((edu: any) => ({
+      degree: edu.degree || "",
+      university: edu.boards || "",
+      graduationYear: edu.graduatedYear || "",
+    })) || [],
+
+    projects: resumeData.projects?.map((project: any) => ({
+      name: project.title || "",
+      technologies: project.techStack || "",
+      description: project.description || "",
+      deployedLink: project.link || "",
+    })) || [],
+
+    certification: resumeData.certifications?.map((cert: any) => ({
+      name: cert.name || "",
+      issuedBy: cert.issuer || "",
+      issueDate: cert.dateIssued || "",
+      deployedLink: cert.deployedUrl || "",
+    })) || [],
+  };
+};
+
 
 export const CountryDialCodes = [
   {
@@ -1225,6 +1265,37 @@ export const CountryDialCodes = [
   },
 ];
 
+export const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return "Now"; 
+  }
+
+  if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`; 
+  }
+
+  if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours} hour${hours !== 1 ? "s" : ""} ago`; 
+  }
+
+  if (diffInSeconds < 604800) {
+    const days = Math.floor(diffInSeconds / 86400);
+    return `${days} day${days !== 1 ? "s" : ""} ago`; 
+  }
+
+  // ✅ More than a week → Format as '15 March 2025'
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+};
 
 export const ProfessionalTitleList = [
   "Academic librarian",
