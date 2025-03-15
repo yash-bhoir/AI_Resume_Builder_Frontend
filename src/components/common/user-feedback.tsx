@@ -12,14 +12,59 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LuMessageSquarePlus } from "react-icons/lu";
 import { Textarea } from "../ui/textarea";
-
-//WIP : Complete user feedback ui functionality + backend integration
-//TODO : 1. Add user feedback form fields and validation
-//TODO : 2. Add user feedback form submission functionality
+import axios, { AxiosError } from "axios"; // Import AxiosError
+import { useState } from "react";
+import { toast } from "sonner"; // Import toast from sonner
+import { useUser } from "@clerk/clerk-react";
 
 const UserFeedback = () => {
+  const { user } = useUser();
+
+  const [role, setRole] = useState(""); // State for role/designation
+  const [content, setContent] = useState(""); // State for feedback content
+  const [isSubmitting, setIsSubmitting] = useState(false); // State for loading
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // State to control dialog open/close
+
+  // Handle form submission
+  const handleSubmit = async () => {
+    if (!role || !content) {
+      toast.error("Please fill out all fields."); // Use toast.error for errors
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Call the backend API to submit feedback
+      const response = await axios.post("http://localhost:8080/api/v1/feedback/AddFeedback", {
+        id: user?.id,
+        role,
+        content,
+      });
+
+      // Show success toast
+      toast.success(response.data.message || "Feedback submitted successfully!"); // Use toast.success for success
+
+      // Close the dialog
+      setIsDialogOpen(false);
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        // Show error toast for Axios errors
+        toast.error(error.response?.data?.message || "Failed to submit feedback.");
+      } else {
+        // Handle non-Axios errors
+        toast.error("An unexpected error occurred.");
+      }
+    } finally {
+      setIsSubmitting(false);
+      // Clear form fields
+      setRole("");
+      setContent("");
+    }
+  };
+
   return (
-    <Dialog>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         <Button className="flex items-center gap-2 justify-center">
           <LuMessageSquarePlus className="size-4" />
@@ -35,18 +80,6 @@ const UserFeedback = () => {
         </DialogHeader>
         <div className="grid gap-4">
           <div className="flex flex-col items-start justify-center gap-2">
-            <Label htmlFor="name" className="text-right">
-              Email Address
-            </Label>
-            <Input
-              id="name"
-              type="email"
-              placeholder="Enter your email address"
-              className="col-span-3"
-              autoComplete="off"
-            />
-          </div>
-          <div className="flex flex-col items-start justify-center gap-2">
             <Label htmlFor="designation" className="text-right">
               Designation or Role
             </Label>
@@ -54,15 +87,29 @@ const UserFeedback = () => {
               id="designation"
               placeholder="Enter your designation or role"
               className="col-span-3"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
             />
           </div>
           <div className="grid w-full gap-1.5">
             <Label htmlFor="message">Your message</Label>
-            <Textarea placeholder="Type your message here." className="h-[8rem] resize-none" id="message" />
+            <Textarea
+              placeholder="Type your message here."
+              className="h-[8rem] resize-none"
+              id="message"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button type="submit">Submit</Button>
+          <Button
+            type="submit"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Submit"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -19,7 +19,8 @@ export function Header() {
         fullName: user?.fullName || `${user?.firstName ?? ""} ${user?.lastName ?? ""}`,
         clerk_id: user?.id,
         phoneNumber: user?.primaryPhoneNumber?.phoneNumber,
-        username: user?.username || user?.id, // fallback to user.id if username is unavailable
+        username: user?.username || user?.id, 
+        avatarUrl: user?.imageUrl
       });
 
       // Show success toast
