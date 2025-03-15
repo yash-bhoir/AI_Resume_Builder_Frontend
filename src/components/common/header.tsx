@@ -55,7 +55,7 @@ export function Header() {
   }, [user, isSignedIn]);
 
   return (
-    <header className="border-b max-w-7xl w-full mx-auto h-16">
+    <header className="border-b max-w-8xl w-full  h-16">
       <div className="container mx-auto px-6 h-full flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2 text-black dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-all ease-in duration-300"> 

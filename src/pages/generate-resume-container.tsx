@@ -10,7 +10,7 @@ export function GenerateResumeContainer() {
   return (
     <div className="h-screen flex flex-col">
       <Header />
-      <div className="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto">
+      <div className="flex-1 flex overflow-hidden max-w-8xl w-full mx-auto">
         <Sidebar/>
         <div className="flex-1 overflow-y-auto main_content_sidebar">
           <Routes>
