@@ -63,7 +63,7 @@ function CodeEditor() {
 
   return (
     <div
-      className="min-h-screen bg-background p-6 relative"
+      className="min-h-screen bg-white dark:bg-black p-6 relative"
       onMouseUp={handleTextSelection}
     >
       <div className="max-w-6xl mx-auto space-y-6">
