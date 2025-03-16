@@ -14,7 +14,7 @@ import UserFeedback from "./user-feedback";
 export function Header() {
   const { user } = useUser();
   return (
-    <header className="border-b max-w-7xl w-full mx-auto h-16">
+    <header className="border-b max-w-8xl w-full  h-16">
       <div className="container mx-auto px-6 h-full flex items-center justify-between">
         {/* Logo */}
         <Link

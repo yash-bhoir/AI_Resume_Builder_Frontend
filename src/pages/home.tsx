@@ -28,7 +28,7 @@ export function HomePage() {
     <>
       <Header />
       <main>
-        <div className="container h-full max-w-7xl w-full mx-auto px-4 py-20">
+        <div className="container h-full max-w-8xl w-full mx-auto px-4 py-20">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="bg-clip-text text-transparent text-center bg-gradient-to-b from-neutral-900 to-neutral-700 dark:from-neutral-600 dark:to-white text-2xl md:text-4xl lg:text-7xl font-sans py-2 relative z-20 font-bold tracking-tight leading-tight">
               Create Your Perfect <br /> Resume with AI.
