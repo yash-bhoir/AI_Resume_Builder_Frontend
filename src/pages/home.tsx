@@ -8,17 +8,19 @@ import UserFeedbackPreview from "@/components/common/user-feedback-preview";
 import FAQPreview from "@/components/common/faq-preview";
 import Footer from "@/components/common/footer";
 import { Header } from "@/components/common/header";
+import { useNavigate } from "react-router-dom";
 
 export function HomePage() {
   const { isSignedIn } = useUser();
   const { redirectToSignIn } = useClerk();
+  const navigate = useNavigate();
 
   const handleGenerateClick = () => {
     if (!isSignedIn) {
       toast.error("Please sign in to generate a resume.");
       redirectToSignIn();
     } else {
-      window.location.href = "/generate";
+      navigate('/generate');
     }
   };
 

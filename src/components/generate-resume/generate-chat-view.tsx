@@ -1,18 +1,16 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Send, Sparkles } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { useUser } from "@clerk/clerk-react";
 import ResumeSkeleton from "@/components/common/skeleton-loading/resume-skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { PreviewSkeleton } from "@/components/common/skeleton-loading/preview-skeleton";
-import { useTheme } from "next-themes";
 import ResultPreview from "@/pages/resultPreview";
 import { BiEditAlt } from "react-icons/bi";
 import ColorTemplateOptions from "./color-template-options";
 import { TbFileText } from "react-icons/tb";
-import { TbBraces } from "react-icons/tb";
+import { MdOutlineColorLens } from "react-icons/md";
 import { LuLayoutTemplate } from "react-icons/lu";
 import { BiUpload } from "react-icons/bi";
 import {
@@ -22,16 +20,18 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import GenerateResumeFlow from "./generate-resume-flow";
-import { OPEN_AI_ENDPOINTS } from "@/lib/endpoints";
+import { OPEN_AI_ENDPOINTS, RESUME_ENDPOINTS } from "@/lib/endpoints";
 import { PiSpinnerGapBold } from "react-icons/pi";
+import { ASSISTANT_RESPONSES, GetRandomResponse } from "@/lib/utils";
+import axios from "axios";
 
-// TODO: get the basic Information from the user and display it in the chat
 // TODO: Add the template to the chat
 // TODO: Edit option of the basic information in the chat
 
+const CACHE_EXPIRY = 10 * 60 * 1000;
 interface Message {
   id: string;
-  content: string;
+  message: string;
   role: "user" | "assistant";
   timestamp: Date;
   isTyping?: boolean;
@@ -43,84 +43,118 @@ const GenerateChatView = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState<boolean>(false);
-  const [typingText, setTypingText] = useState<string>("");
-  const [isTyping, setIsTyping] = useState<boolean>(false);
   const [selectedColor, setSelectedColor] = useState<string>("none");
-  const [fullResponseText, setFullResponseText] = useState("");
+  const [isColorPaleteToggled, setIsColorPaleteToggled] =
+    useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const navigate = useNavigate();
   const location = useLocation();
   const formData = location.state?.formData;
   const resumeId = location.state?.resumeId;
 
   const { isSignedIn } = useUser();
 
-  const { theme } = useTheme();
-  const isDarkMode = theme === "dark";
-
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!isSignedIn) {
+      return;
+    }
+
+    loadConversationFromCache();
+
+    if (!messages.length || isCacheStale()) {
+      fetchConversation();
+      fetchResumeData(resumeId);
+    } else {
+      setIsLoading(false);
+    }
+  }, [resumeId, isSignedIn]);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, typingText]);
+  }, [messages]);
 
-  useEffect(() => {
-    if (isTyping && fullResponseText) {
-      const textLength = fullResponseText.length;
-      let i = 0;
+  const isCacheStale = () => {
+    const lastFetchedAt = localStorage.getItem(
+      `resume_${resumeId}_lastFetchedAt`
+    );
+    if (!lastFetchedAt) return true;
+    return Date.now() - Number(lastFetchedAt) > CACHE_EXPIRY;
+  };
 
-      const typingInterval = setInterval(() => {
-        if (i < textLength) {
-          setTypingText(fullResponseText.substring(0, i + 1));
-          i++;
-        } else {
-          clearInterval(typingInterval);
-          setIsTyping(false);
-
-          // Add the complete message to the chat
-          setMessages((prev) => {
-            const updatedMessages = [...prev];
-            const typingMessageIndex = updatedMessages.findIndex(
-              (m) => m.isTyping
-            );
-
-            if (typingMessageIndex !== -1) {
-              updatedMessages[typingMessageIndex] = {
-                ...updatedMessages[typingMessageIndex],
-                content: fullResponseText,
-                isTyping: false,
-              };
-            }
-
-            return updatedMessages;
-          });
-
-          setTypingText("");
-          setFullResponseText("");
-        }
-      }, 15); // Adjust speed of typing here
-
-      return () => clearInterval(typingInterval);
+  const loadConversationFromCache = () => {
+    const cachedMessages = localStorage.getItem(`resume_${resumeId}_messages`);
+    if (cachedMessages) {
+      setMessages(JSON.parse(cachedMessages));
     }
-  }, [isTyping, fullResponseText]);
+  };
+
+  const fetchConversation = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(
+        `${RESUME_ENDPOINTS.RESUME_GET_ALL_CONVERSATIONS}/${resumeId}`
+      );
+
+      if (response.data.success) {
+        const formattedMessages = response.data.data.map(
+          (msg: { timestamp: string | number | Date }) => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp), // Convert to Date object
+          })
+        );
+
+        setMessages(formattedMessages);
+        updateCache(formattedMessages);
+      }
+    } catch (error) {
+      console.error("Error fetching conversation:", error);
+      toast.error("Failed to load conversation");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchResumeData = async (resumeId: string) => {
+    if (!resumeId) return;
+    setShowPreview(true);
+    setIsGenerating(true);
+    try {
+      const response = await axios.get(
+        `${RESUME_ENDPOINTS.RESUME_GET_BY_ID}/${resumeId}`
+      );
+
+      const data = response.data?.data;
+
+      if (data) {
+        setSelectedColor(data.colors);
+        setGeneratedHtml(data.jsonHtmlCode || "");
+      }
+    } catch (error) {
+      console.error("Failed to fetch resume data:", error);
+      toast.error("Failed to load resume");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const updateCache = (updatedMessages: Message[]) => {
+    localStorage.setItem(
+      `resume_${resumeId}_messages`,
+      JSON.stringify(updatedMessages)
+    );
+    localStorage.setItem(
+      `resume_${resumeId}_lastFetchedAt`,
+      Date.now().toString()
+    );
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
-  if (!isSignedIn) {
-    navigate("/");
-    return <></>;
-  }
-  if (isLoading) return <ResumeSkeleton />;
 
   const handleSendMessage = async () => {
     if (!userPrompt.trim()) {
@@ -128,33 +162,28 @@ const GenerateChatView = (): JSX.Element => {
       return;
     }
 
-    // Add user message to chat
-    const userMessage: Message = {
+    const newMessage: Message = {
       id: Date.now().toString(),
-      content: userPrompt,
+      message: userPrompt,
       role: "user",
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [...prev, newMessage]);
     setUserPrompt("");
     setIsGenerating(true);
-
-    if (!showPreview) {
-      setShowPreview(true);
-    }
 
     try {
       const typingMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "",
+        message: "",
         role: "assistant",
         timestamp: new Date(),
         isTyping: true,
       };
 
       setMessages((prev) => [...prev, typingMessage]);
-      setIsTyping(true);
+      const assistantResponse = GetRandomResponse(ASSISTANT_RESPONSES);
 
       const response = await fetch(
         `${OPEN_AI_ENDPOINTS.PROMPT_TO_HTML_TEMPLATE_COMPLETIONS}`,
@@ -164,16 +193,10 @@ const GenerateChatView = (): JSX.Element => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            userInput: userMessage.content,
-            IsDark: isDarkMode,
-            // If there are previous messages, include them for context
-            previousMessages:
-              messages.length > 0
-                ? messages.map((m) => ({
-                    role: m.role,
-                    content: m.content,
-                  }))
-                : [],
+            resumeId,
+            userInput: newMessage.message,
+            assistantResponse,
+            color: selectedColor,
           }),
         }
       );
@@ -181,19 +204,30 @@ const GenerateChatView = (): JSX.Element => {
       if (!response.ok) {
         throw new Error("Failed to generate response");
       }
-
       const data = await response.json();
+      
+      setTimeout(() => {
+        setMessages((prev) => {
+          const updatedMessages = [...prev];
+          const typingMessageIndex = updatedMessages.findIndex(
+            (msg) => msg.isTyping
+          );
+          if (typingMessageIndex !== -1) {
+            updatedMessages[typingMessageIndex] = {
+              ...updatedMessages[typingMessageIndex],
+              message: data.data.response || assistantResponse,
+              isTyping: false,
+            };
+          }
+          return updatedMessages;
+        });
 
-      // Set the full response text to trigger the typing effect
-      setFullResponseText("I've updated your resume based on your message.");
-      setGeneratedHtml(data.data.html);
+        setGeneratedHtml(data.data);
+        setShowPreview(true);
+        setIsGenerating(false);
+      }, 1000);
     } catch (error) {
       toast.error("Failed to generate response");
-
-      // Set error message with typing effect
-      setFullResponseText(
-        "Sorry, I encountered an error while generating your resume. Please try again."
-      );
     } finally {
       setIsGenerating(false);
     }
@@ -206,14 +240,7 @@ const GenerateChatView = (): JSX.Element => {
     }
   };
 
-  // const clearChat = () => {
-  //   setMessages([]);
-  //   setGeneratedHtml(null);
-  //   setTypingText("");
-  //   setFullResponseText("");
-  //   setIsTyping(false);
-  //   toast.success("Chat cleared");
-  // };
+  if (isLoading) return <ResumeSkeleton />;
 
   return (
     <>
@@ -227,7 +254,12 @@ const GenerateChatView = (): JSX.Element => {
           } flex flex-col h-[80vh]`}
         >
           <div className="flex items-center group w-3/4 mb-4">
-            <Link to="/generate" className="text-sm hover:border-b border-b font-semibold capitalize cursor-pointer">overview </Link>{" "}
+            <Link
+              to="/generate"
+              className="text-sm hover:border-b border-b font-semibold capitalize cursor-pointer"
+            >
+              overview{" "}
+            </Link>{" "}
             <span className="mx-2 text-neutral-700 dark:text-neutral-300">
               /
             </span>
@@ -237,7 +269,7 @@ const GenerateChatView = (): JSX.Element => {
                 {formData?.resumeName || "Untitled Resume"}
               </h1>
               <BiEditAlt
-                className="size-4 cursor-pointer hidden group-hover:block ml-2"
+                className="size-4 cursor-pointer ml-2"
                 onClick={() => setIsModalOpen(true)}
               />
             </div>
@@ -252,10 +284,10 @@ const GenerateChatView = (): JSX.Element => {
           {/* Chat Messages */}
           {messages.length > 0 && (
             <div
-              className="flex-1 overflow-y-auto rounded-lg p-4 mb-4"
+              className="flex-1 overflow-y-auto rounded-lg p-4 mb-4 main_content_sidebar"
               ref={chatContainerRef}
             >
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {messages.map((message) => (
                   <div
                     key={message.id}
@@ -276,22 +308,28 @@ const GenerateChatView = (): JSX.Element => {
                             <PiSpinnerGapBold className="animate-spin size-5" />
                           </p>
                           <div className="text-xs opacity-70 mt-1">
-                            {message.timestamp.toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(message.timestamp).toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
                           </div>
                         </>
                       ) : (
                         <>
                           <p className="whitespace-pre-wrap">
-                            {message.content}
+                            {message.message}
                           </p>
                           <div className="text-xs opacity-70 mt-1">
-                            {message.timestamp.toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(message.timestamp).toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
                           </div>
                         </>
                       )}
@@ -306,7 +344,7 @@ const GenerateChatView = (): JSX.Element => {
           {/* Message Input */}
           <div className="space-y-4">
             <div className="w-full flex flex-col items-start gap-2">
-              {messages.length == 0 && (
+              {(messages.length == 0 || isColorPaleteToggled) && (
                 <ColorTemplateOptions
                   selectedColor={selectedColor}
                   onChange={(color) => setSelectedColor(color)}
@@ -319,31 +357,40 @@ const GenerateChatView = (): JSX.Element => {
                   value={userPrompt}
                   onChange={(e) => setUserPrompt(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  disabled={isTyping}
                 />
 
                 <div className="w-full flex items-center">
+                  {messages.length > 0 && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            className={`m-2 mr-0 h-9 w-9 p-0 border-2 rounded-full ${
+                              isColorPaleteToggled
+                                ? "border-indigo-700 dark:border-indigo-500"
+                                : "border-neutral-800 dark:border-neutral-400"
+                            }`}
+                            size="icon"
+                            variant={"outline"}
+                            onClick={() =>
+                              setIsColorPaleteToggled(!isColorPaleteToggled)
+                            }
+                          >
+                            <MdOutlineColorLens className="size-5" />
+                            {/* <TbBraces  /> */}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Color Scheme</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          className="m-2 h-9 w-9 p-0 rounded-full border-neutral-800 dark:border-neutral-400"
-                          size="icon"
-                          variant={"outline"}
-                        >
-                          <TbBraces className="size-5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Basic Information preview</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          className="m-2 h-9 w-9 ml-0 p-0 rounded-full border-neutral-800 dark:border-neutral-400"
+                          className="m-2 h-9 w-9 p-0 rounded-full border-2 border-neutral-800 dark:border-neutral-400"
                           size="icon"
                           variant={"outline"}
                         >
@@ -359,7 +406,7 @@ const GenerateChatView = (): JSX.Element => {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          className="m-2 h-9 w-9 ml-0 p-0 rounded-full border-neutral-800 dark:border-neutral-400"
+                          className="m-2 h-9 w-9 ml-0 p-0 rounded-full border-2 border-neutral-800 dark:border-neutral-400"
                           size="icon"
                           variant={"outline"}
                         >
@@ -373,34 +420,14 @@ const GenerateChatView = (): JSX.Element => {
                   </TooltipProvider>
                   <Button
                     onClick={handleSendMessage}
-                    disabled={!userPrompt.trim() || isGenerating || isTyping}
-                    className="ml-auto my-2 mr-2 h-9 w-9 p-0 rounded-full"
-                    size="icon"
+                    disabled={!userPrompt.trim() || isGenerating}
+                    className="ml-auto my-2 mr-2 rounded-md"
                   >
-                    {isGenerating ? (
-                      <Sparkles className="size-5 animate-spin" />
-                    ) : (
-                      <Send className="size-5" />
-                    )}
+                    {isGenerating ? "Generating..." : "Generate"}
                   </Button>
                 </div>
               </div>
             </div>
-
-            {/* <div className="flex items-center">
-            <div className="ml-auto flex gap-2">
-              <Button
-                onClick={clearChat}
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                disabled={isTyping}
-              >
-                <RefreshCw className="mr-1 h-3 w-3" />
-                Clear Chat
-              </Button>
-            </div>
-          </div> */}
           </div>
         </div>
 

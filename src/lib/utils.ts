@@ -6,6 +6,68 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const GetRandomResponse = (responses: string[]): string => {
+  if (responses.length === 0) return "No response available.";
+
+  const randomIndex = Math.floor(Math.random() * responses.length);
+  return responses[randomIndex];
+};
+
+export const ASSISTANT_RESPONSES = [
+  "Sure, I can help with that.",
+  "Let me look that up for you.",
+  "That's a great question!",
+  "Here's what I found for you.",
+  "I'm working on it, give me a second.",
+  "Let me think about that for a moment.",
+  "Interesting! Let me figure that out for you.",
+  "I'm on it! Just give me a moment.",
+  "Let me process that for you.",
+  "That's a tricky one! Let me work on it.",
+  "I’m analyzing the details, give me a second.",
+  "Hold on, I’m gathering the information.",
+  "I'm fetching the data you need.",
+  "I'm putting the pieces together now.",
+  "Almost there! Just one moment.",
+  "I'll get back to you on that shortly.",
+  "Just a sec, I’m working it out.",
+  "Let me double-check that for you.",
+  "I'm compiling the information right now.",
+  "Hang tight, I’m piecing it together.",
+  "I'm reviewing the data for you.",
+  "Give me a second, I’m checking that out.",
+  "I'm processing your request as we speak.",
+  "Let me verify that for you.",
+  "I'm on it! Just need a second.",
+  "That's a good one! Let me think for a second.",
+  "Let me cross-check the details for you.",
+  "I'm running the numbers for you.",
+  "Just checking my sources, one sec.",
+  "Let me dig deeper into that.",
+  "One moment, I'm almost there!",
+  "Give me a moment to confirm that.",
+  "Let me see what I can find for you.",
+  "That's a good point! Let me verify it.",
+  "I’m working through the details right now.",
+  "Let me clarify that for you.",
+  "Almost done! Hang in there.",
+  "I’m getting the details for you now.",
+  "Let me check my sources real quick.",
+  "Let me think that through for a moment.",
+  "I’m gathering more details for you.",
+  "This might take a second, hold on.",
+  "Let me align the facts for you.",
+  "On it! Just reviewing the details.",
+  "Give me a second while I dig into that.",
+  "Let me organize the info for you.",
+  "I’m checking the data right now.",
+  "Hold on! I’m reviewing it now.",
+  "Just double-checking that for you.",
+  "Let me confirm the details for you.",
+  "I’m almost there, just hold tight!",
+];
+
+
 export function truncateText(text: string, maxLength: number) {
   if (text.length > maxLength) {
     return text.substring(0, maxLength) + "...";
