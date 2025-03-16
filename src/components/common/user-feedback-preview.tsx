@@ -2,6 +2,7 @@ import { Quote } from "lucide-react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner"; // Import toast from sonner
+import { FEEDBACK_ENDPOINTS } from "@/lib/endpoints";
 
 interface Review {
   id: string;
@@ -19,11 +20,9 @@ const UserFeedbackPreview = () => {
   useEffect(() => {
     const fetchFeedbacks = async () => {
       try {
-        const response = await axios.post("http://localhost:8080/api/v1/feedback/GetFeedback");
-        setReviews(response.data.data); // Assuming the API returns { data: Review[] }
-        console.log("response :: ", response);
+        const response = await axios.post(`${FEEDBACK_ENDPOINTS.GET_FEEDBACK}`);
+        setReviews(response.data.data); 
       } catch (error) {
-        // Show error toast
         toast.error("Failed to fetch feedbacks. Please try again later.");
         console.error("Error fetching feedbacks:", error);
       } finally {

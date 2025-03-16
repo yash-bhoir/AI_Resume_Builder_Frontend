@@ -30,64 +30,63 @@ export function GenerateResumePage(): JSX.Element {
       );
 
       setResumes(response.data.resumes);
-      setIsLoading(false);
     } catch (error) {
       console.error("Error fetching resumes:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    setIsLoading(true);
     fetchResumes();
   }, [user]);
 
-  return isLoading ? (
-    <OverviewSkeleton />
-  ) : (
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <OverviewSkeleton />;
+  }
+
+  return (
     <>
       <div className="container mt-2">
         {location.pathname === "/generate" && (
           <>
-            {resumes && resumes.length > 0 ? (
+            {resumes.length > 0 ? (
               <>
-                {resumes.length > 0 && (
-                  <div className="m-auto h-fit flex flex-col items-start w-full px-10 py-2">
-                    <h1 className="text-md font-medium text-neutral-600 dark:text-neutral-300">
-                      Overview
-                    </h1>
-                    <Button
-                      variant="outline"
-                      className="m-2 group flex flex-col w-[200px] h-[200px]"
-                      onClick={() => setModalOpen(true)}
-                    >
-                      <BsPlus className="size-20 text-neutral-500 group-hover:text-indigo-500" />
-                      <span className="text-md font-medium text-neutral-800 dark:text-neutral-200 group-hover:text-indigo-500">
-                        Create New Resume
-                      </span>
-                    </Button>
-                  </div>
-                )}
+                <div className="m-auto h-fit flex flex-col items-start w-full px-10 py-2">
+                  <h1 className="text-md font-medium text-neutral-600 dark:text-neutral-300">
+                    Overview
+                  </h1>
+                  <Button
+                    variant="outline"
+                    className="m-2 group flex flex-col w-[200px] h-[200px]"
+                    onClick={() => setModalOpen(true)}
+                  >
+                    <BsPlus className="size-20 text-neutral-500 group-hover:text-indigo-500" />
+                    <span className="text-md font-medium text-neutral-800 dark:text-neutral-200 group-hover:text-indigo-500">
+                      Create New Resume
+                    </span>
+                  </Button>
+                </div>
 
-                {resumes.length > 0 && (
-                  <div className="m-auto h-fit flex flex-col items-start w-full px-12 py-2">
-                    <h1 className="text-md font-medium text-neutral-600 dark:text-neutral-300">
-                      Recent Generated Resumes
-                    </h1>
-                    <div className="flex flex-wrap w-full mt-3 gap-8">
-                      {resumes.map((history: any) => (
-                        <GenerateHistoryCard
-                          key={history?.id}
-                          title={history?.templateName}
-                          date={history?.createdAt}
-                          resumeData={history}
-                          getAllResumes={fetchResumes}
-                        />
-                      ))}
-                    </div>
+                <div className="m-auto h-fit flex flex-col items-start w-full px-12 py-2">
+                  <h1 className="text-md font-medium text-neutral-600 dark:text-neutral-300">
+                    Recent Generated Resumes
+                  </h1>
+                  <div className="flex flex-wrap w-full mt-3 gap-8">
+                    {resumes.map((history: any) => (
+                      <GenerateHistoryCard
+                        key={history?.id}
+                        title={history?.templateName}
+                        date={history?.createdAt}
+                        resumeData={history}
+                        getAllResumes={fetchResumes}
+                      />
+                    ))}
                   </div>
-                )}
+                </div>
               </>
             ) : (
               <div className="w-[550px] h-[80vh] text-center px-6 m-auto mt-8 flex flex-col items-center justify-center">
