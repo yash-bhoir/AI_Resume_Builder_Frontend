@@ -20,6 +20,7 @@ export function GenerateResumePage(): JSX.Element {
 
   const fetchResumes = async () => {
     try {
+      setIsLoading(true);
       const response = await axios.get(
         `${RESUME_ENDPOINTS.RESUME_GET_ALL}/${user.id}`,
         {
@@ -30,8 +31,12 @@ export function GenerateResumePage(): JSX.Element {
       );
 
       setResumes(response.data.resumes);
+      setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       console.error("Error fetching resumes:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -61,10 +66,10 @@ export function GenerateResumePage(): JSX.Element {
                   </h1>
                   <Button
                     variant="outline"
-                    className="m-2 group flex flex-col w-[200px] h-[200px]"
+                    className="m-2 group flex flex-col w-[200px] h-[200px] transition-all ease-in duration-150"
                     onClick={() => setModalOpen(true)}
                   >
-                    <BsPlus className="size-20 text-neutral-500 group-hover:text-indigo-500" />
+                    <BsPlus className="size-20 text-neutral-500 group-hover:scale-110 group-hover:text-indigo-500" />
                     <span className="text-md font-medium text-neutral-800 dark:text-neutral-200 group-hover:text-indigo-500">
                       Create New Resume
                     </span>
@@ -76,15 +81,16 @@ export function GenerateResumePage(): JSX.Element {
                     Recent Generated Resumes
                   </h1>
                   <div className="flex flex-wrap w-full mt-3 gap-8">
-                    {resumes.map((history: any) => (
-                      <GenerateHistoryCard
-                        key={history?.id}
-                        title={history?.templateName}
-                        date={history?.createdAt}
-                        resumeData={history}
-                        getAllResumes={fetchResumes}
-                      />
-                    ))}
+                    {resumes &&
+                      resumes.map((history: any) => (
+                        <GenerateHistoryCard
+                          key={history?.id}
+                          title={history?.templateName}
+                          date={history?.createdAt}
+                          resumeData={history}
+                          getAllResumes={fetchResumes}
+                        />
+                      ))}
                   </div>
                 </div>
               </>

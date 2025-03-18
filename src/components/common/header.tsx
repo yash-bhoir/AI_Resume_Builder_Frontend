@@ -15,7 +15,7 @@ export function Header() {
   const { user } = useUser();
   return (
     <header className="border-b max-w-8xl w-full m-auto h-16">
-      <div className="container mx-auto px-16 h-full flex items-center justify-between">
+      <div className="container mx-auto px-8 h-full flex items-center justify-between">
         {/* Logo */}
         <Link
           to="/"
