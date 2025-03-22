@@ -39,7 +39,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import axios from "axios";
-import { RESUME_ENDPOINTS } from "@/lib/endpoints";
+import { OPEN_AI_ENDPOINTS, RESUME_ENDPOINTS } from "@/lib/endpoints";
 import { FaCheck } from "react-icons/fa6";
 import { FaTimes } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
@@ -72,10 +72,13 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
   const [step, setStep] = useState<number>(0);
   const [isProfessionSelectOpen, setIsProfessionSelectOpen] =
     useState<boolean>(false);
+  const { user } = useUser();
+  const { user: authorisedUser } = useAuth();
+
   const [formData, setFormData] = useState<FormData>(
     initialFormData || {
-      fullName: "",
-      email: "",
+      fullName: authorisedUser?.fullName || "",
+      email: authorisedUser?.primaryEmailAddress?.emailAddress || "",
       workingProfession: "",
       careerSummary: "",
       experience: [],
@@ -84,7 +87,10 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
       certification: [],
       projects: [],
       resumeName: "",
-      phoneNumber: "",
+      phoneNumber:
+        authorisedUser?.phoneNumbers[0].phoneNumber?.substring(
+          authorisedUser?.phoneNumbers[0].phoneNumber.length - 10
+        ) || "",
     }
   );
   const [selectedCode, setSelectedCode] = useState<string>("+91");
@@ -92,10 +98,11 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
   const [isTemplateNameUnique, setIsTemplateNameUnique] = useState<
     boolean | null
   >(null);
+  const [generateCount, setGenerateCount] = useState<number>(0);
+
   const { userId } = useAuth();
 
   const navigate = useNavigate();
-  const { user } = useUser();
 
   const validateStep = () => {
     let newErrors: Record<string, string> = {};
@@ -284,6 +291,29 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
       });
   }, [formData.resumeName, userId, isUpdateResume, initialFormData]);
 
+  const handleGenerateWithAIDescription = async () => {
+    if (generateCount >= 3) return;
+    try {
+      const profession = formData.workingProfession;
+      const response = await axios.post(`${OPEN_AI_ENDPOINTS.GENERATE_DESCRIPTION_WITH_AI}`, {
+        profession,
+        resumeId: isUpdateResume,
+        userId: user?.id,
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        careerSummary: response.data.description || "Generated description not available.",
+      }));
+  
+
+      setGenerateCount((prev) => prev + 1); // Increment count after successful generation
+    } catch (error: any) {
+      console.error("Error generating description:", error);
+      toast.error(error?.response?.data?.message || "Failed to create resume");
+    }
+  };
+
   useEffect(() => {
     setStep(0);
     setErrors({});
@@ -450,9 +480,9 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
 
           {/* Step 2: Career Summary */}
           {step === 1 && (
-            <div className="flex flex-col items-start gap-3">
+            <div className="flex flex-col items-start">
               <>
-                <Label>Working profession</Label>
+                <Label className="mb-4">Working profession</Label>
                 <Popover
                   open={isProfessionSelectOpen}
                   onOpenChange={setIsProfessionSelectOpen}
@@ -510,7 +540,17 @@ const GenerateResumeFlow: React.FC<GenerateResumeFlowProps> = ({
               </>
 
               <>
-                <Label>Describe your career journey</Label>
+                <div className="w-full flex items-center justify-between mt-6 mb-4">
+                  <Label>Describe your career journey</Label>
+                  {formData.workingProfession && generateCount < 3 && (
+                    <Button
+                      onClick={handleGenerateWithAIDescription}
+                      size={"sm"}
+                    >
+                      Generate with AI ({3 - generateCount} left)
+                    </Button>
+                  )}
+                </div>
                 <Textarea
                   name="careerSummary"
                   placeholder="Briefly describe your career"
