@@ -2,6 +2,7 @@ export const BASE_URL = "http://localhost:8080/api/v1/";
 
 export const OPEN_AI_ENDPOINTS = {
   PROMPT_TO_HTML_TEMPLATE_COMPLETIONS: `${BASE_URL}openAi/createHtmlTemplate`,
+  GENERATE_DESCRIPTION_WITH_AI: `${BASE_URL}openAi/generate-description-with-ai`
 };
 
 export const USER_ENDPOINTS = {
