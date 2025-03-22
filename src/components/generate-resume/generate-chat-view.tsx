@@ -205,7 +205,7 @@ const GenerateChatView = (): JSX.Element => {
         throw new Error("Failed to generate response");
       }
       const data = await response.json();
-      
+
       setTimeout(() => {
         setMessages((prev) => {
           const updatedMessages = [...prev];
@@ -245,7 +245,9 @@ const GenerateChatView = (): JSX.Element => {
   return (
     <>
       <div
-        className={`flex gap-8 mt-8 ${showPreview ? "ml-8" : "justify-center"}`}
+        className={`flex gap-8 mt-8 ${
+          showPreview ? "ml-8 mr-8" : "justify-center"
+        }`}
       >
         {/* Left Side: Chat Interface */}
         <div
@@ -284,7 +286,7 @@ const GenerateChatView = (): JSX.Element => {
           {/* Chat Messages */}
           {messages.length > 0 && (
             <div
-              className="flex-1 overflow-y-auto rounded-lg p-4 mb-4 main_content_sidebar"
+              className="flex-1 overflow-y-auto rounded-lg p-4 mb-4 main_content_sidebar border-2"
               ref={chatContainerRef}
             >
               <div className="space-y-3">
@@ -323,13 +325,30 @@ const GenerateChatView = (): JSX.Element => {
                             {message.message}
                           </p>
                           <div className="text-xs opacity-70 mt-1">
-                            {new Date(message.timestamp).toLocaleTimeString(
-                              [],
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }
-                            )}
+                            {(() => {
+                              const messageDate = new Date(message.timestamp);
+                              const today = new Date();
+
+                              // Check if the message date is today
+                              const isToday =
+                                messageDate.getDate() === today.getDate() &&
+                                messageDate.getMonth() === today.getMonth() &&
+                                messageDate.getFullYear() ===
+                                  today.getFullYear();
+
+                              return isToday
+                                ? messageDate.toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
+                                : messageDate.toLocaleString([], {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "2-digit",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  });
+                            })()}
                           </div>
                         </>
                       )}

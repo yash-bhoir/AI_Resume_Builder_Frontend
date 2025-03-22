@@ -10,7 +10,7 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ onClick }) => {
   return (
-    <div className="flex flex-col items-start mt-20 gap-8">
+    <div className="flex flex-col items-center mt-20 gap-8 w-full max-w-7xl m-auto">
       <div className="p-6 w-full flex flex-col items-center justify-center border max-w-5xl rounded-2xl mx-auto relative overflow-hidden">
         <DotPattern
           width={20}
@@ -35,7 +35,7 @@ const Footer: React.FC<FooterProps> = ({ onClick }) => {
           Generate Resume
         </InteractiveHoverButton>
       </div>
-      <div className="p-6 border-t w-full flex items-center justify-between">
+      <div className="p-6 px-24 border-t w-full flex items-center justify-between">
         <span className="text-xs text-neutral-500 dark:text-neutral-400">
           © {new Date().getFullYear()} ResumeAI. All rights reserved.
         </span>

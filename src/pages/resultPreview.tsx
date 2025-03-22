@@ -1,10 +1,31 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Eye, Sparkles, Download } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { IoMdArrowDropdown } from "react-icons/io";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
+import { useAuth } from "@/context/AuthContext";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Prop {
   htmlCode: string;
 }
+
+// TODO: download as pdf [text format not image]
 
 function ResultPreview({ htmlCode }: Prop) {
   const [editedContent, setEditedContent] = useState<string>(htmlCode);
@@ -16,6 +37,13 @@ function ResultPreview({ htmlCode }: Prop) {
   const [prompt, setPrompt] = useState<string>("");
   const previewRef = useRef<HTMLDivElement>(null);
   const previewSectionRef = useRef<HTMLDivElement>(null);
+  const [downloadableAs, setDownloadbaleAs] = useState<string>("html");
+  const { user } = useAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleView = () => {
+    setIsModalOpen(true);
+  };
 
   useEffect(() => {
     if (previewRef.current) {
@@ -114,40 +142,81 @@ function ResultPreview({ htmlCode }: Prop) {
     }
   };
 
-  const handleDownload = () => {
-    const blob = new Blob([editedContent], { type: "text/html" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "edited_content.html";
-    a.click();
-    window.URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (downloadableAs === "html") {
+      // Download as HTML
+      const blob = new Blob([editedContent], { type: "text/html" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${user.fullName}.html`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } else if (downloadableAs === "pdf") {
+      if (previewRef.current) {
+        const canvas = await html2canvas(previewRef.current, {
+          scale: 2, // Higher scale for better quality
+        });
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("p", "mm", "a4");
+        const imgWidth = 210; // A4 width in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+        pdf.save(`${user.fullName}.pdf`);
+      }
+    }
   };
-
   return (
     <>
       {/* Preview Section */}
-      <div
-        ref={previewSectionRef}
-        className=""
-        onMouseUp={handleTextSelection}
-      >
+      <div ref={previewSectionRef} className="" onMouseUp={handleTextSelection}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Eye className="w-4 h-4" />
             <h2 className="text-sm font-bold text-neutral-600 dark:text-neutral-400">
               Resume Preview
             </h2>
           </div>
-          <div>
+          <div className="flex items-center gap-4">
             <Button
-              variant="outline"
-              onClick={handleDownload}
+              variant={"outline"}
               className="flex items-center gap-2"
+              onClick={handleView}
             >
-              <Download className="w-4 h-4" />
-              Download
+              <Eye className="w-4 h-4" />
+              View
             </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                onClick={handleDownload}
+                className="flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Download as {downloadableAs.toUpperCase()}
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size={"icon"} className="px-0">
+                    <IoMdArrowDropdown className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuLabel>Download as</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={downloadableAs}
+                    onValueChange={setDownloadbaleAs}
+                  >
+                    <DropdownMenuRadioItem value="html">
+                      HTML
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="pdf">
+                      PDF
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
         <div className="p-4 h-[75vh] overflow-auto border rounded-lg shadow-lg main_content_sidebar">
@@ -160,6 +229,21 @@ function ResultPreview({ htmlCode }: Prop) {
           />
         </div>
       </div>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-4xl h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Preview Resume</DialogTitle>
+          </DialogHeader>
+          <div className="h-[80vh]">
+            <iframe
+              srcDoc={editedContent}
+              title="Resume Preview"
+              className="w-full h-full border rounded-md"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* AI Generate Button and Prompt Input */}
       {aiButtonPosition && (

@@ -2,6 +2,16 @@ import { FormData } from "@/interface/resume-interface";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+interface Template {
+  id: string;
+  name: string;
+  html: string;
+  type: "system" | "custom";
+  timeStamp: string;
+  stars: number;
+}
+
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -65,6 +75,198 @@ export const ASSISTANT_RESPONSES = [
   "Just double-checking that for you.",
   "Let me confirm the details for you.",
   "I’m almost there, just hold tight!",
+];
+
+export const SYSTEM_TEMPLATES : Template[] = [
+  {
+    id: "1",
+    name: "Modern Professional Resume",
+    html: `
+      <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+        <h1 style="color: #2563eb; font-size: 24px;">John Doe</h1>
+        <p style="color: #666;">Senior Software Engineer</p>
+        <div style="margin: 20px 0; height: 2px; background: #e5e7eb;"></div>
+        <h2 style="color: #2563eb; font-size: 18px;">Experience</h2>
+        <div style="margin: 10px 0;">
+          <h3 style="font-size: 16px;">Tech Corp - Senior Developer</h3>
+          <p style="color: #666;">2020 - Present</p>
+        </div>
+      </div>
+    `,
+    type: "system",
+    timeStamp: "17th Jan 2025",
+    stars: 42,
+  },
+  {
+    id: "2",
+    name: "Creative Designer Resume",
+    html: `
+      <div style="font-family: 'Helvetica', sans-serif; padding: 20px; background: #f8f9fa;">
+        <div style="text-align: center;">
+          <h1 style="color: #6366f1; font-size: 28px; margin: 0;">Sarah Smith</h1>
+          <p style="color: #4b5563; margin-top: 5px;">UI/UX Designer</p>
+        </div>
+        <div style="margin: 20px 0; height: 3px; background: linear-gradient(to right, #6366f1, #8b5cf6);"></div>
+        <div style="margin-top: 20px;">
+          <h2 style="color: #6366f1; font-size: 20px;">Portfolio Highlights</h2>
+          <ul style="list-style-type: none; padding: 0;">
+            <li style="margin: 10px 0; padding-left: 20px; border-left: 2px solid #6366f1;">
+              Design System Creation
+            </li>
+          </ul>
+        </div>
+      </div>
+    `,
+    type: "system",
+    timeStamp: "09th April 2025",
+    stars: 17,
+  },
+  {
+    id: "3",
+    name: "Executive Summary Resume",
+    html: `
+      <div style="font-family: 'Georgia', serif; padding: 20px; color: #444;">
+        <h1 style="color: #1e293b; font-size: 26px;">Michael Johnson</h1>
+        <p style="color: #64748b;">Chief Operating Officer</p>
+        <hr style="border: 1px solid #1e293b; margin: 20px 0;" />
+        <h2 style="font-size: 20px; color: #1e293b;">Experience</h2>
+        <p>Leading strategic operations and driving company growth for 10+ years.</p>
+      </div>
+    `,
+    type: "system",
+    timeStamp: "21st Feb 2025",
+    stars: 33,
+  },
+  {
+    id: "4",
+    name: "Minimalist Freelancer Resume",
+    html: `
+      <div style="font-family: 'Arial', sans-serif; padding: 20px; color: #222;">
+        <h1 style="font-size: 22px; color: #334155;">Alex Lee</h1>
+        <p style="font-size: 16px; color: #64748b;">Freelance Web Developer</p>
+        <h2 style="font-size: 18px; color: #334155;">Skills</h2>
+        <ul style="padding-left: 20px; color: #475569;">
+          <li>JavaScript, React, Node.js</li>
+          <li>API Integration, Web Performance</li>
+        </ul>
+      </div>
+    `,
+    type: "system",
+    timeStamp: "05th March 2025",
+    stars: 28,
+  },
+  {
+    id: "5",
+    name: "Classic Accountant Resume",
+    html: `
+      <div style="font-family: 'Times New Roman', serif; padding: 20px; color: #333;">
+        <h1 style="font-size: 24px; color: #2563eb;">Emily Davis</h1>
+        <p style="font-size: 16px; color: #4b5563;">Certified Public Accountant</p>
+        <div style="margin-top: 20px;">
+          <h2 style="font-size: 18px; color: #2563eb;">Experience</h2>
+          <p>Managed audits and tax filings for Fortune 500 companies.</p>
+        </div>
+      </div>
+    `,
+    type: "system",
+    timeStamp: "12th May 2025",
+    stars: 19,
+  },
+  {
+    id: "6",
+    name: "Corporate Consultant Resume",
+    html: `
+      <div style="font-family: 'Arial', sans-serif; padding: 20px; color: #333;">
+        <h1 style="color: #1e3a8a; font-size: 24px;">Jane Smith</h1>
+        <p style="color: #64748b;">Business Consultant</p>
+        <div style="margin-top: 20px;">
+          <h2 style="font-size: 18px; color: #1e3a8a;">Skills</h2>
+          <ul style="padding-left: 20px; color: #475569;">
+            <li>Strategic Planning</li>
+            <li>Market Analysis</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    type: "system",
+    timeStamp: "18th June 2025",
+    stars: 24,
+  },
+  {
+    id: "7",
+    name: "Elegant Marketing Resume",
+    html: `
+      <div style="font-family: 'Verdana', sans-serif; padding: 20px; color: #333;">
+        <h1 style="color: #9333ea; font-size: 24px;">Olivia Taylor</h1>
+        <p style="color: #6b7280;">Marketing Specialist</p>
+        <div style="margin-top: 20px;">
+          <h2 style="font-size: 18px; color: #9333ea;">Key Achievements</h2>
+          <ul style="padding-left: 20px; color: #475569;">
+            <li>Increased customer engagement by 35%</li>
+            <li>Managed successful product launch campaigns</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    type: "system",
+    timeStamp: "27th July 2025",
+    stars: 31,
+  },
+  {
+    id: "8",
+    name: "Tech Startup Resume",
+    html: `
+      <div style="font-family: 'Roboto', sans-serif; padding: 20px; color: #333;">
+        <h1 style="color: #2563eb; font-size: 24px;">Liam Brown</h1>
+        <p style="color: #6b7280;">Startup Founder & CEO</p>
+        <div style="margin-top: 20px;">
+          <h2 style="font-size: 18px; color: #2563eb;">Highlights</h2>
+          <ul style="padding-left: 20px; color: #475569;">
+            <li>Raised $2M in seed funding</li>
+            <li>Expanded team from 3 to 20+ employees</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    type: "system",
+    timeStamp: "15th Aug 2025",
+    stars: 37,
+  },
+  {
+    id: "9",
+    name: "Data Scientist Resume",
+    html: `
+      <div style="font-family: 'Arial', sans-serif; padding: 20px; color: #333; background-color: #f9fafb;">
+        <h1 style="color: #2563eb; font-size: 24px; margin-bottom: 5px;">Ava Wilson</h1>
+        <p style="color: #4b5563; margin-top: 0;">Data Scientist</p>
+        <div style="margin: 20px 0; height: 2px; background: #e5e7eb;"></div>
+        
+        <h2 style="color: #2563eb; font-size: 18px;">Skills</h2>
+        <ul style="padding-left: 20px; color: #475569;">
+          <li>Python, R, TensorFlow, Scikit-Learn</li>
+          <li>Data Analysis, Machine Learning, Predictive Modeling</li>
+        </ul>
+  
+        <h2 style="color: #2563eb; font-size: 18px;">Experience</h2>
+        <div style="margin-bottom: 10px;">
+          <h3 style="font-size: 16px;">XYZ Tech - Senior Data Scientist</h3>
+          <p style="color: #4b5563;">2021 - Present</p>
+          <p>Developed machine learning models that increased customer retention by 25%.</p>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <h3 style="font-size: 16px;">ABC Corp - Data Analyst</h3>
+          <p style="color: #4b5563;">2019 - 2021</p>
+          <p>Analyzed large datasets to identify market trends and business insights.</p>
+        </div>
+  
+        <h2 style="color: #2563eb; font-size: 18px;">Education</h2>
+        <p>Bachelor of Science in Data Science – Stanford University (2018)</p>
+      </div>
+    `,
+    type: "system",
+    timeStamp: "05th Sep 2025",
+    stars: 45,
+  }
 ];
 
 
@@ -1327,6 +1529,7 @@ export const CountryDialCodes = [
   },
 ];
 
+// used for time ages
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
   const now = new Date();
